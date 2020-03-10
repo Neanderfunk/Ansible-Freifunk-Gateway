@@ -1,0 +1,11 @@
+---
+- name: Install dependencies for this role
+  apt:
+    pkg: ['gdebi', 'xz-utils']
+
+- name: Install check-mk-agent
+  apt: 
+    deb: "{{ check_mk.deb }}"
+
+- name: Install gen_server
+  copy: "src=gen_server dest='/usr/lib/check_mk_agent/local/gen_server' owner=root group=root mode='755'"
