@@ -1,11 +1,21 @@
 ---
 - name: Install dependencies for this role
   apt:
-    pkg: ['gdebi', 'xz-utils']
+    name: ['gdebi', 'xz-utils']
+    update_cache: yes
+    state: present
 
-- name: Install check-mk-agent
+- name: Download check-mk-agent
+  get_url: 
+      url= "{{ check_mk.deb }}"
+      dest= /root/check_mk_agent.deb
+
+- name: Install my_package
   apt: 
-    deb: "{{ check_mk.deb }}"
+    deb: "/root/check_mk_agent.deb"
 
 - name: Install gen_server
   copy: "src=gen_server dest='/usr/lib/check_mk_agent/local/gen_server' owner=root group=root mode='755'"
+
+
+
