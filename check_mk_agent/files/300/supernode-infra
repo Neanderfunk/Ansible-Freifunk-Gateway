@@ -94,5 +94,5 @@ function ati # ipv4 to longint
     dns4via4=0; dns6via4=0; dns4via6=0; dns6via6=0;
    fi
   dnsstatus=$dnsmasqrunning$dns4via4$dns6via6$dns4via6$dns6via4
-  echo "P dns dnsstatus=$dnsstatus.0;11110:11112;11110:11112 dns4via4=$dns4via4 dns6via6=$dns6via6 dns4via6=$dns4via6 dns6via4=$dns6via4";
+  echo "P dns dnsstatus=$dnsstatus.0;1110:1112;1110:1112 dns4via4=$dns4via4 dns6via6=$dns6via6 dns4via6=$dns4via6 dns6via4=$dns6via4";
 
