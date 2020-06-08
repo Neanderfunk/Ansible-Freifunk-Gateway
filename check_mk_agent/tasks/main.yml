@@ -10,12 +10,27 @@
       url= "{{ check_mk.deb }}"
       dest= /root/check_mk_agent.deb
 
-- name: Install my_package
+- name: Install checkmk package
   apt: 
     deb: "/root/check_mk_agent.deb"
 
-- name: Install gen_server
-  copy: "src=gen_server dest='/usr/lib/check_mk_agent/local/gen_server' owner=root group=root mode='755'"
+- name: checkmk localcheck cached directories
+  file:
+    path: /usr/lib/check_mk_agent/local/300
+    state: directory
+  file:
+    path: /usr/lib/check_mk_agent/local/600
+    state: directory
 
+- name: copy checkmk localcheck serverstatus
+  copy: "src=serverstatus dest='/usr/lib/check_mk_agent/local/serverstatus' owner=root group=root mode='755'"
 
+- name: copy checkmk localcheck supernode
+  copy: "src=supernode dest='/usr/lib/check_mk_agent/local/supernode' owner=root group=root mode='755'"
+
+- name: copy checkmk localcheck supdernode-infra
+  copy: "src=supernode-infra dest='/usr/lib/check_mk_agent/local/300/supernode-infra' owner=root group=root mode='755'"
+
+- name: copy checkmk localcheck updatestatus
+  copy: "src=updatestatus dest='/usr/lib/check_mk_agent/local/600/updatestatus' owner=root group=root mode='755'"
 
