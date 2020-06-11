@@ -30,6 +30,9 @@ for domain in "${domain_ids[@]}"; do
  done
 # echo Total domains configured:$domaincount $domaincountz
 
+ffrluplinkblock="2a03:2260"
+ffnwuplinkblock="2a0f:b507"
+
 ## dhcpd-server leasescheck
 # needs dhtest from https://github.com/saravana815/dhtest compiled
 for (( domainindex=0; domainindex<=domaincountz; domainindex++ )); do
@@ -70,7 +73,7 @@ for (( domainindex=0; domainindex<=domaincountz; domainindex++ )); do
     for (( domainindex=0; domainindex<=domaincountz; domainindex++ )); do
       ffuplinkblock="2a03"
       ipv4=$(ip addr show ${domain_cliifs[$domainindex]} | grep "inet\b" | awk '{print $2}' | cut -d/ -f1 |grep -v 127.0.0.1|tail -n1)
-      ipv6=$(ip addr show ${domain_cliifs[$domainindex]} | grep "inet6\b" | awk '{print $2}' | cut -d/ -f1|grep $ffuplinkblock|tail -n1)
+      ipv6=$(ip addr show ${domain_cliifs[$domainindex]} | grep "inet6\b" | awk '{print $2}' | cut -d/ -f1|grep "$ffrluplinkblock\|$ffnwuplinkblock"|tail -n1)
       dns4via4=$(dig +short @$ipv4 A    $testhost +time=2|tail -1|wc -l)
       dns6via4=$(dig +short @$ipv4 AAAA $testhost +time=2|tail -1|wc -l)
       dns4via6=$(dig +short @$ipv6 A    $testhost +time=2|tail -1|wc -l)
@@ -83,7 +86,7 @@ for (( domainindex=0; domainindex<=domaincountz; domainindex++ )); do
    fi
   echo "P dns dns4via4=$dns4v4oks.0;$mindnsok:$maxdnsok;$mindnsok:$maxdnsok|dns4via6=$dns4v6oks.0;$mindnsok:$maxdnsok;$mindnsok:$maxdnsok|dns6via4=$dns6v4oks.0;$mindnsok:$maxdnsok;$mindnsok:$maxdnsok|dns6via6=$dns4v4oks.0;$mindnsok:$maxdnsok;$mindnsok:$maxdnsok";
 
-## FFRL Uplinkcheck
+## FF Uplinkcheck
   testipv4a="8.8.8.8" # google-dns
   testipv4b="1.1.1.1" # cloudflare
   testipv6a="2001:4860:4860::8888" # google-dns
@@ -94,14 +97,13 @@ for (( domainindex=0; domainindex<=domaincountz; domainindex++ )); do
   wgettimeout="3"
   wgettries="2"
   wgeturl="http://www.google.de"
-  ffuplinkblock="2a03"
   ping4oks=0
   ping6oks=0
   minpingok=$(( $domaincountz ))
   maxpingok=$(( $domaincount +1 ))
   for (( domainindex=0; domainindex<=domaincountz; domainindex++ )); do
     br0ipv4=$(ip addr show ${domain_cliifs[$domainindex]} | grep "inet\b" | awk '{print $2}' | cut -d/ -f1 |grep -v 127.0.0.1|tail -n1)
-    br0ipv6=$(ip addr show ${domain_cliifs[$domainindex]} | grep "inet6\b" | awk '{print $2}' | cut -d/ -f1|grep $ffuplinkblock|tail -n1)
+    br0ipv6=$(ip addr show ${domain_cliifs[$domainindex]} | grep "inet6\b" | awk '{print $2}' | cut -d/ -f1|grep "$ffrluplinkblock\|$ffnwuplinkblock"|tail -n1)
     pingv4=$(ping  -c$pingcount -i $pingdelay -I $br0ipv4 $testipv4a > /dev/null 2>&1; echo $?)
     [ ! "$ping4" == "0" ] &&  ping4=$(ping  -c$pingcount -i $pingdelay -I $br0ipv4 $testipv4b >/dev/null 2>&1; echo $?)
     [ "$ping4" == "0" ] && ((ping4oks++))
