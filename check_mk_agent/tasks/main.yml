@@ -7,8 +7,8 @@
 
 - name: Download check-mk-agent
   get_url: 
-      url= "{{ check_mk.deb }}"
-      dest= /root/check_mk_agent.deb
+      url="{{ check_mk.deb }}"
+      dest="/root/check_mk_agent.deb"
 
 - name: Install checkmk package
   apt: 
@@ -17,10 +17,16 @@
 - name: checkmk localcheck cached directories
   file:
     path: /usr/lib/check_mk_agent/local/300
+    recurse: yes 
     state: directory
+    mode: '0755'
+
+- name: checkmk localcheck cached directories 
   file:
     path: /usr/lib/check_mk_agent/local/600
+    recurse: yes 
     state: directory
+    mode: '0755'
 
 - name: copy checkmk localcheck serverstatus
   copy: "src=serverstatus dest='/usr/lib/check_mk_agent/local/serverstatus' owner=root group=root mode='755'"
@@ -33,4 +39,3 @@
 
 - name: copy checkmk localcheck updatestatus
   copy: "src=updatestatus dest='/usr/lib/check_mk_agent/local/600/updatestatus' owner=root group=root mode='755'"
-

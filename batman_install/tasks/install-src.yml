@@ -28,7 +28,7 @@
 - name: Batman bauen
   command: "{{ item }}"
   with_items:
-    - dkms add -m batman-adv -v {{ batman.version }}
+  #  - dkms add -m batman-adv -v {{ batman.version }}
     - dkms build -m batman-adv -v {{ batman.version }}
     - dkms install -m batman-adv -v {{ batman.version }} --force
   notify: restart batman
