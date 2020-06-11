@@ -45,7 +45,6 @@ if [ "$bat_adv_v" == "$bat_ctl_v" ] ; then
  fi
 
 echo "P Batman-Version kernelvsctl=$batadvequal;1:2;0:3 versions:$bat_version"
-#list=$(ls -F /sys/kernel/debug/batman_adv|grep /)
 for b in "${domain_cliifs[@]}"; do
   z=$( batctl -m $b o 2>/dev/null | wc -l )
   if [ $z -ge 1 ]; then
@@ -79,28 +78,52 @@ if  [ -x "$(fastd -v 2>/dev/null)" ]; then
     wlimit=$(( $limit * 90 / 100 ))
     clow=$(( $limit / 100 ))
     wlow=$(( $limit * 5 / 100 ))
-    echo "P Fastd_Clients_$interface Clients=$clients.0;$wlow:$wlimit;$clow:$climit; Interface: $interface, Port: $port, MTU: $mtu, Peer Limit: $limit"
+    echo "P Fastd_cli_$interface Clients=$clients.0;$wlow:$wlimit;$clow:$climit; Interface:$interface, Port:$port, MTU:$mtu, Peer-Limit:$limit"
    done
  fi
+
+
+## tunneldigger
+tdconfig="/srv/tunneldigger/broker/l2tp_broker_domain"
+mintdok=$(( $domaincountz ))
+maxtdok=$(( $domaincount +1 ))
+tdsum=0
+wlow=1
+wlimit=200
+clow=0
+climit=250
+for b in "${domain_ids[@]}"; do
+  td=$(printf "%.2d\n" $b)
+  br="br$td"
+  tdcfg="$tdconfig$td.cfg"
+  tdactive=$(systemctl is-active tunneldigger@$td.service)
+  tdrunning=$(ps ax |grep tunndeligger|grep -v grep|wc -l)
+  tdclients=$(brctl show "$br"|grep "l2tp"|wc -l)
+  tdstatus=0; [ "$tdactive" == "active" ] && tdstatus=1
+  tdsum=$(( $tdsum + $tdstatus))
+  mtu=$(confline $tdcfg "^pmtu"|cut -d= -f2|tr -d " ")
+  port=$(confline $tdcfg "^port"|cut -d= -f2|tr -d " ")
+  echo "P TD_cli_$br Clients=$tdclients.0;$wlow:$wlimit;$clow:$climit Port:$port, MTU:$mtu"
+ done
+echo "P TD Tunneldiggeractive=$tdsum.0;$mintdok:$maxtdok;$mintdok:$maxtdok";
 
 ## kea-dhcp4
 keaactive=$(systemctl is-active kea-dhcp4)
 kearunning=$(ps ax |grep kea-dhcp4|grep -v grep|wc -l)
 keastatus=0; [ "$keaactive" == "active" ] && keastatus=1
-echo "P kea keaactive=$keastatus.0;0:2;0:2 kearunning=$kearunning keaservice=$keaactive";
+echo "P KEA keaactive=$keastatus.0;0:2;0:2 kearunning=$kearunning keaservice=$keaactive";
 
 ## postgres
 postgresactive=$(systemctl is-active system-postgresql.slice)
 postgresrunning=$(ps ax |grep postgres|grep -v grep|wc -l)
 postgresstatus=0; [ "$postgresactive" == "active" ] && postgresstatus=1
-echo "P postgres postgresactive=$postgresstatus.0;0:2;0:2|postgresrunning=$postgresrunning.0;6:8;6:8 postgresservice=$postgresactive";
+echo "P Postgres postgresactive=$postgresstatus.0;0:2;0:2|postgresrunning=$postgresrunning.0;6:8;6:8 postgresservice=$postgresactive";
 
 ## bind
 bindactive=$(systemctl is-active bind9.service)
 bindrunning=$(ps ax |grep bind|grep -v grep|wc -l)
 bindstatus=0; [ "$bindactive" == "active" ] && bindstatus=1
-echo "P bind9 bindactive=$bindstatus.0;0:2;0:2|bindrunning=$bindrunning.0;0:2;0:2 bindservice=$bindactive";
-
+echo "P Bind9 bindactive=$bindstatus.0;0:2;0:2|bindrunning=$bindrunning.0;0:2;0:2 bindservice=$bindactive";
 
 # BGP-interfaces
 interconf=/etc/network/interfaces.d/
@@ -117,7 +140,7 @@ while read -r line; do
     tunnel4st="DOWN"
    fi
   mtu=$(ip link|grep $remote|cut -d" " -f5)
-  echo "P tunl4_$remote link4-$remote=$state.0;0:2;0:2; link-$remote:$tunnel4st mtu:$mtu"
+  echo "P Tun4_$remote link4-$remote=$state.0;0:2;0:2; link-$remote:$tunnel4st mtu:$mtu"
  done <<< "$tunnel4"
 
 tunnel6=$(grep -r "iface tun" $interconf|grep "inet6 static")
@@ -133,7 +156,7 @@ while read -r line; do
     tunnel6st="DOWN"
    fi
   mtu=$(ip link|grep $remote|cut -d" " -f5)
-  echo "P tunl6_$remote link6-$remote=$state.0;0:2;0:2; link-$remote:$tunnel6st mtu:$mtu"
+  echo "P Tun6_$remote link6-$remote=$state.0;0:2;0:2; link-$remote:$tunnel6st mtu:$mtu"
  done <<< "$tunnel6"
 
 
@@ -194,7 +217,7 @@ while read line; do
      ExportUp=$(confline $TFILE2 "Export withdraws:")
      ExpUpWit=$(echo $routes|cut -d" " -f6)
      rm $TFILE2
-    echo "P b4l-$remote Bird4-$remote=$linkok.0;0.1:2;0:2 linkstate:$linkstate since:$since preference:$preference preferred:$preferred imported:$imported exported:$exported ImpUpAcp:$ImpUpAcp ImpUpWit:$ImpUpWit ExpUpAcp:$ExpUpAcp ExUpWit:$ExpUpWit"
+    echo "P Bird4-$remote Bird4-$remote=$linkok.0;0.1:2;0:2 linkstate:$linkstate since:$since preference:$preference preferred:$preferred imported:$imported exported:$exported ImpUpAcp:$ImpUpAcp ImpUpWit:$ImpUpWit ExpUpAcp:$ExpUpAcp ExUpWit:$ExpUpWit"
    fi
  done<$TFILE
 rm $TFILE
@@ -249,7 +272,7 @@ while read line; do
      ExportUp=$(confline $TFILE2 "Export withdraws:")
      ExpUpWit=$(echo $routes|cut -d" " -f6)
      rm $TFILE2
-    echo "P b6l-$remote Bird6-$remote=$linkok.0;0.1:2;0:2 linkstate:$linkstate since:$since preference:$preference preferred:$preferred imported:$imported exported:$exported ImpUpAcp:$ImpUpAcp ImpUpWit:$ImpUpWit ExpUpAcp:$ExpUpAcp ExUpWit:$ExpUpWit"
+    echo "P Bird6-$remote Bird6-$remote=$linkok.0;0.1:2;0:2 linkstate:$linkstate since:$since preference:$preference preferred:$preferred imported:$imported exported:$exported ImpUpAcp:$ImpUpAcp ImpUpWit:$ImpUpWit ExpUpAcp:$ExpUpAcp ExUpWit:$ExpUpWit"
    fi
  done<$TFILE
 rm $TFILE
@@ -259,10 +282,10 @@ echo "P Bird6links bird6-Up=$bird6up.0;$wlow:$wlimit;$clow:$climit|Bird6-Configu
 conntrack=$(conntrack -C);
 conntrack_limit=$(sysctl -a 2>/dev/null |grep net.nf_conntrack_max|cut -d ' ' -f 3);
 conntrack_remain=$(echo $conntrack_limit - $conntrack|bc)
-wlow=0.1
-clow=1.1
-wlimit=$(echo $conntrack_limit *0.7|bc)
-climit=$(echo $conntrack_limit *0.9|bc)
-wrlimit=$(echo $conntrack_limit *0.3|bc)
-crlimit=$(echo $conntrack_limit *0.1|bc)
+wlow=5.0
+clow=0.0
+wlimit=$(echo "r=$conntrack_limit*0.7;r/1"|bc)
+climit=$(echo "r=$conntrack_limit*0.9;r/1"|bc)
+wrlimit=$(echo "r=$conntrack_limit*0.3;r/1"|bc)
+crlimit=$(echo "r=$conntrack_limit*0.1;r/1"|bc)
 echo "P Conntrack conntrack=$conntrack.0;$wlow:$wlimit;$clow:$climit|conntrack_remain=$conntrack_remain.0;$wrlimit:$conntrack_limit;$crlimit:$conntrack_limit Conntrack:$conntrack Conntrack-Remain:$conntrack_remain Conntrack-Limit:$conntrack_limit"
