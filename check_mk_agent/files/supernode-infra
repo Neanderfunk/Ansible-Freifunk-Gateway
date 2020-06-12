@@ -116,6 +116,7 @@ if ( systemctl -q is-active bind9.service ) ; then
     dns4v6oks=$((dns4v6oks+dns4via6))
     dns6v4oks=$((dns6v4oks+dns6via4))
     dns6v6oks=$((dns6v6oks+dns6via6))
+    echo "P ffdns-$domainidpad dns4via4=$dns4via4.0;0:2;0:2|dns4via6=$dns4via6.0;0:2;0:2|dns6via4=$dns6via4.0;0:2;0:2|dns6via6=$dns6via6.0;0:2;0:2"
    done
  fi
 echo "P dns dns4via4=$dns4v4oks.0;$mindnsok:$maxdnsok;$mindnsok:$maxdnsok|dns4via6=$dns4v6oks.0;$mindnsok:$maxdnsok;$mindnsok:$maxdnsok|dns6via4=$dns6v4oks.0;$mindnsok:$maxdnsok;$mindnsok:$maxdnsok|dns6via6=$dns4v4oks.0;$mindnsok:$maxdnsok;$mindnsok:$maxdnsok";
