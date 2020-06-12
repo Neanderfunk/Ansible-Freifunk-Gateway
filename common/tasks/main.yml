@@ -71,7 +71,7 @@
 - name: install common packages
   apt:
     name: ['vim', 'wget', 'vnstat', 'tmux', 'pastebinit', 'htop', 'jnettop', 'iotop', 'tcpdump', 'screen', 'strace', 'socat', 'dnsutils', 'host', 'ifupdown',
-      'apt-transport-https', 'tshark', 'dwdiff', 'molly-guard', 'git', 'iperf3', 'mtr-tiny', 'dhcpdump', 'dhcping', 'irqbalance', 'build-essential', 'ethtool', 'traceroute', 'joe', 'speedtest-cli']
+      'apt-transport-https', 'tshark', 'dwdiff', 'molly-guard', 'git', 'iperf3', 'mtr-tiny', 'dhcpdump', 'dhcping', 'irqbalance', 'build-essential', 'ethtool', 'traceroute', 'joe', 'speedtest-cli', 'jq', 'bc']
     update_cache: yes
 
 - name: uninstall unneeded packages
