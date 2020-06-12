@@ -185,7 +185,7 @@ if [ "$bird4status" == "1" ] ; then
   clow=$(( $bird4confzahl * 10 / 20 + 1 ))
   wlimit=$(( $bird4confzahl + 1 ))
   climit=$(( $bird4confzahl + 1 ))
-  TFILE="/tmp/$(basename $0).$$.tmp"
+  TFILE="/tmp/$(basename $0).$$.1.tmp"
   birdc s p>$TFILE
   while read line; do
     line=$(echo $line|sed -e "s/[[:space:]]\+/ /g"|sed s/^\ //|sed s/\;//)
@@ -203,7 +203,7 @@ if [ "$bird4status" == "1" ] ; then
        else
         birdlink="DOWN"
        fi
-      TFILE2="/tmp/$(basename $0).$$$.tmp"
+      TFILE2="/tmp/$(basename $0).$$.2.tmp"
       birdc s p all $remote>$TFILE2
       preference=$(confline $TFILE2 Preference:|cut -d" " -f2)
       routes=$(confline $TFILE2 Routes:)
@@ -246,7 +246,7 @@ echo "P Bird6 bird6active=$bird6status.0;0:2;0:2|bird6running=$bird6running.0;0:
   clow=$(( $bird6confzahl * 10 / 20 + 1 ))
   wlimit=$(( $bird6confzahl +1 ))
   climit=$(( $bird6confzahl +1 ))
-  TFILE="/tmp/$(basename $0).$$.tmp"
+  TFILE="/tmp/$(basename $0).$$.3.tmp"
   birdc6 s p>$TFILE
   while read line; do
     line=$(echo $line|sed -e "s/[[:space:]]\+/ /g"|sed s/^\ //|sed s/\;//)
@@ -264,7 +264,7 @@ echo "P Bird6 bird6active=$bird6status.0;0:2;0:2|bird6running=$bird6running.0;0:
        else
         birdlink="DOWN"
        fi
-      TFILE2="/tmp/$(basename $0).$$$.tmp"
+      TFILE2="/tmp/$(basename $0).$$.4.tmp"
       birdc6 s p all $remote>$TFILE2
       preference=$(confline $TFILE2 Preference:|cut -d" " -f2)
       routes=$(confline $TFILE2 Routes:)
