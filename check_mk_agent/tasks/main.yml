@@ -1,7 +1,7 @@
 ---
 - name: Install dependencies for this role
   apt:
-    name: ['gdebi', 'xz-utils']
+    name: ['gdebi-core', 'xz-utils', 'jq', 'bc']
     update_cache: yes
     state: present
 
