@@ -106,6 +106,8 @@ mindnsok=$(( $domaincountz ))
 maxdnsok=$(( $domaincount +1 ))
 if ( systemctl -q is-active bind9.service ) ; then
   for (( domainindex=0; domainindex<=domaincountz; domainindex++ )); do
+    domainid=${domain_ids[$domainindex]}
+    domainidpad=$(printf "%.2d\n" $domainid)
     ipv4=$(ip addr show ${domain_cliifs[$domainindex]} | grep "inet\b" | awk '{print $2}' | cut -d/ -f1 |grep -v 127.0.0.1|tail -n1)
     ipv6=$(ip addr show ${domain_cliifs[$domainindex]} | grep "inet6\b" | awk '{print $2}' | cut -d/ -f1|grep "$ffrluplinkblock\|$ffnwuplinkblock"|tail -n1)
     dns4via4=$(dig +short @$ipv4 A    $testhost +time=2|tail -1|wc -l)
