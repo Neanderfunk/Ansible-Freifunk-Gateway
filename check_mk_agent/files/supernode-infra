@@ -39,6 +39,7 @@ for (( domainindex=0; domainindex<=domaincountz; domainindex++ )); do
   domainid=${domain_ids[$domainindex]}
   domainidpad=$(printf "%.2d\n" $domainid)
   activeleases=$(psql kea_leases -U kea -h localhost -c "COPY(SELECT leases FROM lease4_stat WHERE subnet_id=$domainid AND state=0) TO STDOUT CSV;")
+  [ -z $activeleases ] && activeleases=0
   dhcprange=${domain_v4ranges[$domainindex]}
   dhcpstart=$(echo $dhcprange|cut -d"-" -f1)
   dhcpend=$(echo $dhcprange|cut -d"-" -f2)
