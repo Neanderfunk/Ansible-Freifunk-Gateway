@@ -189,7 +189,12 @@ template bgp uplink {
 	local as {{as_parameters.as_number}};
 	import where is_default();
 	export filter export_to_upstream_filter;
+{% if not ffrl_tun is defined %}
+	gateway direct;
+{% endif %}
+{% if ffrl_tun is defined %}
 	gateway recursive;
+{% endif %}
 }
 {% if ffrl_tun is defined %}
 
@@ -209,13 +214,16 @@ protocol bgp ffnw_{{tun.name}} from uplink {
         description "Nordwest Backbone";
 	source address {{ tun.v6_remote | next_nth_usable(1) }};
         neighbor {{tun.v6_remote | ipaddr('address')}}%'tun-ffnw-{{tun.name}}' as 206313;
-# this would override the template 'uplink'<-'export_to_upstream_filter'
-# import filter {
-#		reject;
-#	};
-# export filter {
-#		reject;
-#	};
+
+# filter if ffnw is second v6 link
+{% if ffrl_tun is defined %}
+import filter {
+		reject;
+	};
+export filter {
+		reject;
+	};
+{% endif %}
 };
 
 {% endfor %}
