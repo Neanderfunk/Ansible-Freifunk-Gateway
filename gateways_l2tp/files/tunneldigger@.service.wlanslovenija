@@ -3,6 +3,7 @@ Description=tunneldigger tunnelling network daemon using l2tpv3 for domain %i
 After=network.target auditd.service
 
 [Service]
+User=root
 Type=simple
 WorkingDirectory=/srv/tunneldigger/broker/src/tunneldigger_broker
 ExecStart=/srv/tunneldigger/bin/python -m broker.main /srv/tunneldigger/broker/l2tp_broker_dom%i.cfg
