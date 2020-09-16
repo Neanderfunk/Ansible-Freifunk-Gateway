@@ -1,0 +1,17 @@
+
+
+nextcloud_domains:
+  - "{{ dns }}"
+
+
+nextcloud_config:
+  - "redis host --value=/var/run/redis/redis.sock"
+  - "redis port --type=integer --value=0"
+  - "memcache.local --value=\\\\OC\\\\Memcache\\\\APCu"
+  - "memcache.distributed --value=\\\\OC\\\\Memcache\\\\Redis"
+  - "memcache.locking --value=\\\\OC\\\\Memcache\\\\Redis"
+  - "filelocking.enabled --type=boolean --value=true"
+  - "default_language --value=de"
+  - "default_locale --value=de_DE"
+  - "overwrite.cli.url --value=https://cloud.neanderfunk.de"
+  - "logtimezone --value=Europe/Berlin"
