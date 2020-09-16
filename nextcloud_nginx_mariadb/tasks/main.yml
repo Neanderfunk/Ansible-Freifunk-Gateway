@@ -1,0 +1,324 @@
+- include_vars: passwords.yml
+
+- name: Installiere python-pymysql Abhängigkeit für ansible
+  apt:
+    name: "python3-pymysql"
+    install_recommends: yes
+    state: present
+  become: yes
+
+
+- name: Installiere MariaDB
+  apt:
+    name: "{{ packages }}"
+    install_recommends: yes
+    state: present
+  vars:
+    packages:
+      - mariadb-server
+  become: yes
+
+- name: Kopiere MariaDB Server Anpassungen
+  copy:
+    src: 99-anpassungen.cnf
+    dest: /etc/mysql/mariadb.conf.d/99-anpassungen.cnf
+  become: yes
+  notify: restart mariadb
+
+- name: Installiere nginx
+  apt:
+    name: "{{ packages }}"
+    install_recommends: yes
+    state: present
+  vars:
+    packages:
+      - nginx
+  become: yes
+
+- name: PHP | Install Ondrej PHP PPA
+  apt_repository:
+    repo: 'ppa:ondrej/php'
+    update_cache: yes
+  become: yes
+
+- name: Installiere redis-server
+  apt:
+    name: redis-server
+    install_recommends: yes
+    state: present
+  become: yes
+
+- name: Konfiguriere redis-server
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: "{{ item.regex }}"
+    insertafter: "{{ item.insertafter }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regex: '^unixsocket /var/run/redis/redis.sock', insertafter: '^# unixsocket ', line: 'unixsocket /var/run/redis/redis.sock' }
+    - { regex: '^unixsocketperm 770', insertafter: '^# unixsocketperm ',  line: 'unixsocketperm 770' }
+  become: yes
+  notify: restart redis-server
+
+- name: Füge www-data Benutzer der redis Gruppe hinzu
+  user:
+    name: www-data
+    groups: redis
+    append: yes
+  become: yes
+
+- name: Installiere PHP-FPM mit allen Modulen
+  apt:
+    name: "{{ packages }}"
+    install_recommends: yes
+    state: present
+  vars:
+    packages:
+      - php7.4-cli
+      - php7.4-fpm
+      - php7.4-gd
+      - php7.4-mysql
+      - php7.4-curl
+      - php7.4-mbstring
+      - php7.4-intl
+      - php7.4-gmp
+      - php7.4-bcmath
+      - php-imagick
+      - php7.4-xml
+      - php7.4-zip
+      - php7.4-bz2
+      - php-redis
+      - php-apcu
+  become: yes
+
+- name: Kopiere php-fpm benutzerdefinierte Konfigurationsanpassungen
+  copy:
+    src: php_customconf.ini
+    dest: /etc/php/7.4/fpm/conf.d/99_anpassungen.ini
+  become: yes
+  notify: restart php-fpm
+
+- name: Deaktiviere default Konfiguration.
+  file:
+    path: "/etc/nginx/sites-enabled/default"
+    state: absent
+  become: yes
+  notify: restart nginx
+
+
+- name: acme install
+  shell: wget -O -  https://get.acme.sh | sh
+  args:
+    creates: /root/.acme.sh/acme.sh
+  become: yes
+
+# erstelle ssl ordner
+- name: Erstelle ssl Ordner
+  file:
+    path: /etc/nginx/ssl
+    state: directory
+    owner: root
+    group: root
+  become: yes
+
+# erstelle dh-params
+- name: Erstelle dh-params.
+  command: openssl dhparam -out /etc/nginx/ssl/dhparam-4096.pem 4096
+  args:
+    creates: /etc/nginx/ssl/dhparam-4096.pem
+  become: yes
+
+- name: Entferne /var/www/html Ordner
+  file:
+    state: absent
+    path: "/var/www/html"
+  become: yes
+
+- name: Stoppe nginx für acme standalone
+  systemd:
+    state: stopped
+    name: nginx.service
+  become: yes
+
+- name: Hole Zertifikat per acme standalone
+  command:
+    cmd: /root/.acme.sh/acme.sh --issue --standalone -d {{ item }} -k ec-384
+    creates: /root/.acme.sh/{{ item }}_ecc/{{ item }}.cer
+  with_items: "{{ nextcloud_domains }}"
+  register: acmecertsgeholt
+  become: yes
+
+- name: Starte nginx nach acme standalone
+  systemd:
+    state: started
+    name: nginx.service
+  become: yes
+
+- name: Prüfe ob Zertifikat vorhanden
+  stat:
+    path: /root/.acme.sh/{{ item }}_ecc/{{ item }}.cer
+  with_items: "{{ nextcloud_domains }}"
+  register: acmecerts
+  become: yes
+
+# - name: Zertifikat Prüfung
+#   debug:
+#     var: acmecerts
+#
+# - name: Zertifikate geholt
+#   debug:
+#     var: acmecertsgeholt
+
+- name: Installiere Zertifikat
+  command:
+    cmd: /root/.acme.sh/acme.sh --install-cert -d {{ item.item }} --key-file /etc/nginx/ssl/{{ item.item }}.key --fullchain-file /etc/nginx/ssl/{{ item.item }}-fullchain.pem --reloadcmd "systemctl force-reload nginx.service" --ecc
+  when: item.changed
+  with_items: "{{ acmecertsgeholt.results }}"
+  become: yes
+
+
+- name: Erstelle nextcloud Datenbank
+  mysql_db:
+    name: nextcloud
+    encoding: utf8mb4
+    login_unix_socket: /run/mysqld/mysqld.sock
+    state: present
+  become: yes
+
+- name: Erstelle nextcloud Datenbank Account
+  mysql_user:
+    name: nextcloud
+    password: '{{ mysql_nextcloud_password }}'
+    priv: 'nextcloud.*:ALL'
+    login_unix_socket: /run/mysqld/mysqld.sock
+    state: present
+  become: yes
+
+
+- name: Prüfe ob nextcloud schon installiert ist
+  stat:
+    path: /var/www/nextcloud
+  register: nextcloudinstalled
+
+- name: Erstelle Nextcloud Ordner
+  file:
+    path: "/var/www/nextcloud"
+    owner: www-data
+    group: www-data
+    mode: '0755'
+    state: directory
+  when: not nextcloudinstalled.stat.exists
+  become: yes
+
+- name: Downloade die neuste Nextcloud Version und entpacke sie nach /var/www/nextcloud
+  unarchive:
+    src: https://download.nextcloud.com/server/releases/latest.tar.bz2
+    remote_src: yes
+    dest: /var/www
+    owner: "www-data"
+    group: "www-data"
+  register: newnextcloud
+  when: not nextcloudinstalled.stat.exists
+  become: yes
+
+- name: Erstelle nginx allgemeine nextcloud Konfiguration
+  copy:
+    src: nextcloud_phphandler.conf
+    dest: /etc/nginx/conf.d/99_nextcloud_phphandler.conf
+  become: yes
+  notify: reload nginx
+
+- name: Erstelle nextcloud site nginx Konfiguration
+  template:
+    src: nextcloud-nginx.j2
+    dest: /etc/nginx/sites-available/{{ item }}.conf
+  with_items: '{{ nextcloud_domains }}'
+  become: yes
+  notify: reload nginx
+
+- name: Erstelle PHP pool Konfiguration
+  template:
+    src: nextcloud-phppool.j2
+    dest: /etc/php/7.4/fpm/pool.d/nextcloud.conf
+  become: yes
+  notify: restart php-fpm
+
+- name: Aktiviere die nextcloud nginx Konfiguration
+  file:
+    src: /etc/nginx/sites-available/{{ item }}.conf
+    path: /etc/nginx/sites-enabled/{{ item }}.conf
+    state: link
+  with_items: '{{ nextcloud_domains }}'
+  become: yes
+  notify: reload nginx
+
+- name: Erstelle Nextcloud Daten Ordner
+  file:
+    path: "{{ item }}"
+    owner: www-data
+    group: www-data
+    mode: '0770'
+    state: directory
+  loop:
+    - "/clouddata"
+    - "/clouddata/data"
+  become: yes
+
+# - name: Debug
+#   debug:
+#     var: newnextcloud
+
+- name: Installiere nextcloud
+  command: sudo -u www-data php occ maintenance:install --database "mysql" --database-name "nextcloud" --database-user "nextcloud" --database-pass "{{ mysql_nextcloud_password }}" --admin-user "{{ nextcloud_admin }}" --admin-pass "{{ nextcloud_admin_password }}" --data-dir "/clouddata/data"
+  args:
+    chdir: /var/www/nextcloud/
+  when: newnextcloud.changed
+  become: yes
+
+
+- name: Hole trusted Domains
+  command: sudo -u www-data php occ config:system:get trusted_domains
+  args:
+    chdir: /var/www/nextcloud/
+  register: nextcloud_trusted_domains
+  become: yes
+
+# - name: Setze trusted Domains
+#   debug:
+#     msg: "{{ nextcloud_trusted_domains.stdout_lines|length  + my_index }} --value={{ item }}"
+#   loop: "{{ nextcloud_domains }}"
+#   loop_control:
+#     index_var: my_index
+#   when: item not in nextcloud_trusted_domains.stdout_lines
+#   become: yes
+
+- name: Setze trusted Domains
+  command: "sudo -u www-data php occ config:system:set trusted_domains {{ nextcloud_trusted_domains.stdout_lines|length  + my_index }} --value={{ item }}"
+  args:
+    chdir: /var/www/nextcloud/
+  register: nextcloud_trusted_domains
+  loop: "{{ nextcloud_domains }}"
+  loop_control:
+    index_var: my_index
+  when: item not in nextcloud_trusted_domains.stdout_lines
+  become: yes
+
+# - name: Trusted Domains hinterlegt
+#   debug:
+#     var: nextcloud_trusted_domains
+
+- name: Konfiguriere nextcloud
+  command: sudo -u www-data php occ config:system:set {{ item }}
+  args:
+    chdir: /var/www/nextcloud/
+  with_items: '{{ nextcloud_config }}'
+  become: yes
+
+
+- name: Hinterlege cronjob für nextcloud
+  cron:
+    name: "nextcloud Hintergrunddienst"
+    minute: "*/5"
+    job: "php -f /var/www/nextcloud/cron.php"
+    user: www-data
+  become: yes
