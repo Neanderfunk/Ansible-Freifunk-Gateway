@@ -15,3 +15,8 @@ nextcloud_config:
   - "default_locale --value=de_DE"
   - "overwrite.cli.url --value=https://cloud.neanderfunk.de"
   - "logtimezone --value=Europe/Berlin"
+
+nextcloud_onlyoffice_enable: no
+nextcloud_onlyoffice_port: 8000
+
+acme_first_setup_run: no
