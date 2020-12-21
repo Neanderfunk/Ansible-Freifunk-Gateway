@@ -131,7 +131,7 @@ server {
         fastcgi_pass php-handler-nc;
         fastcgi_intercept_errors on;
         fastcgi_request_buffering off;
-        fastcgi_read_timeout 600;
+        fastcgi_read_timeout 6000;
     }
 
     location ~ ^\/(?:updater|oc[ms]-provider)(?:$|\/) {
