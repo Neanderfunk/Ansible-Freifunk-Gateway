@@ -2,7 +2,7 @@
 ---
 - name: Install required packages for building KEA
   apt:
-    pkg: ['git', 'g++', 'automake', 'autoconf', 'libtool', 'pkg-config', 'libboost-all-dev', 'openssl', 'libssl-dev', 'ca-certificates', 'liblog4cplus-dev', 'postgresql-server-dev-all', 'libpq-dev']
+    pkg: ['git', 'g++', 'automake', 'autoconf', 'libtool', 'pkg-config', 'libboost-all-dev', 'openssl', 'libssl-dev', 'ca-certificates', 'liblog4cplus-dev', 'postgresql-server-dev-all', 'libpq-dev', 'kea-common']
     update_cache: yes
     cache_valid_time: 1800
     state: present

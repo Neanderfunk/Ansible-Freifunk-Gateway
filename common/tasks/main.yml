@@ -74,6 +74,12 @@
       'apt-transport-https', 'tshark', 'dwdiff', 'molly-guard', 'git', 'iperf3', 'mtr-tiny', 'dhcpdump', 'dhcping', 'irqbalance', 'build-essential', 'ethtool', 'traceroute', 'joe', 'speedtest-cli', 'jq', 'bc']
     update_cache: yes
 
+- name: linux-hwe-kernel
+  apt:
+    name: ['linux-generic-hwe-18.04']
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '18.04'
+
 - name: uninstall unneeded packages
   apt:
     pkg: ['rpcbind']
