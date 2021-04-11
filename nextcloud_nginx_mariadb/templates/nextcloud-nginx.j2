@@ -52,8 +52,7 @@ server {
     add_header Referrer-Policy                      "no-referrer"   always;
     add_header X-Content-Type-Options               "nosniff"       always;
     add_header X-Download-Options                   "noopen"        always;
-# Entfernt, damit OnlyOffice mit alen Domains funktioniert.
-#    add_header X-Frame-Options                      "SAMEORIGIN"    always;
+    add_header X-Frame-Options                      "SAMEORIGIN"    always;
     add_header X-Permitted-Cross-Domain-Policies    "none"          always;
     add_header X-Robots-Tag                         "none"          always;
     add_header X-XSS-Protection                     "1; mode=block" always;
@@ -64,6 +63,9 @@ server {
     # Path to the root of your installation
     root /var/www/nextcloud;
 
+    location ^~ /.well-known/acme-challenge/ {
+        try_files $uri /index.php$request_uri;
+    }
 
     location = /robots.txt {
         allow all;
@@ -129,7 +131,7 @@ server {
         fastcgi_pass php-handler-nc;
         fastcgi_intercept_errors on;
         fastcgi_request_buffering off;
-        fastcgi_read_timeout 600;
+        fastcgi_read_timeout 6000;
     }
 
     location ~ ^\/(?:updater|oc[ms]-provider)(?:$|\/) {

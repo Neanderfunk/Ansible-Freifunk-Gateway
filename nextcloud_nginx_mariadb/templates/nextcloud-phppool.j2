@@ -6,12 +6,12 @@ listen.owner = www-data
 listen.group = www-data
 
 pm = dynamic
-pm.max_children = 5
-pm.start_servers = 2
-pm.min_spare_servers = 1
-pm.max_spare_servers = 3
+pm.max_children = 20
+pm.start_servers = 3
+pm.min_spare_servers = 3
+pm.max_spare_servers = 6
 
-request_terminate_timeout = 600
+request_terminate_timeout = 36000
 
 
 env[HOSTNAME] = $HOSTNAME
@@ -22,6 +22,9 @@ env[TEMP] = /tmp
 
 
 php_admin_value[memory_limit] = 1G
-php_admin_value[open_basedir] = /var/www/nextcloud/:/tmp/:/dev/urandom:/var/log/nextcloud:/proc/meminfo:/clouddata
+php_admin_value[open_basedir] = /var/www/nextcloud/:/tmp/:/dev/urandom:/proc/meminfo:/proc/uptime:/proc/cpuinfo:/sys/class/net/lo:/sys/class/net/ens18:/var/log/nextcloud:/clouddata
 php_admin_value[upload_max_filesize] = 16G
 php_admin_value[post_max_size] = 16G
+php_admin_value[output_buffering] = 0
+php_admin_value[max_execution_time] = 36000
+php_admin_value[max_input_time] = 36000
