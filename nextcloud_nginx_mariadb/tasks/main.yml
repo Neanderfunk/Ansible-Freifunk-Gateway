@@ -102,31 +102,39 @@
 - name: Installiere PHP-FPM mit allen Modulen
   apt:
     name: "{{ packages }}"
-    install_recommends: yes
+    install_recommends: no
     state: present
   vars:
     packages:
-      - php7.4-cli
-      - php7.4-fpm
-      - php7.4-gd
-      - php7.4-mysql
-      - php7.4-curl
-      - php7.4-mbstring
-      - php7.4-intl
-      - php7.4-gmp
-      - php7.4-bcmath
-      - php-imagick
-      - php7.4-xml
-      - php7.4-zip
-      - php7.4-bz2
-      - php-redis
-      - php-apcu
+      - php8.0-cli
+      - php8.0-fpm
+      - php8.0-gd
+      - php8.0-mysql
+      - php8.0-curl
+      - php8.0-mbstring
+      - php8.0-intl
+      - php8.0-gmp
+      - php8.0-bcmath
+      - php8.0-xml
+      - php8.0-zip
+      - php8.0-bz2
+      - php8.0-redis
+      - php8.0-apcu
+      - php8.0-imagick
+      - libmagickcore-6.q16-6-extra # für svg support in imagic ab Nextcloud 21
   become: yes
 
 - name: Kopiere php-fpm benutzerdefinierte Konfigurationsanpassungen
   copy:
-    src: php_customconf.ini
-    dest: /etc/php/7.4/fpm/conf.d/99_anpassungen.ini
+    src: php8.0_customconf.ini
+    dest: /etc/php/8.0/fpm/conf.d/99_anpassungen.ini
+  become: yes
+  notify: restart php-fpm
+
+- name: Kopiere php-cli benutzerdefinierte Konfigurationsanpassungen
+  copy:
+    src: php8.0_cli_customconf.ini
+    dest: /etc/php/8.0/cli/conf.d/99_anpassungen.ini
   become: yes
   notify: restart php-fpm
 
@@ -312,7 +320,7 @@
 - name: Erstelle PHP pool Konfiguration
   template:
     src: nextcloud-phppool.j2
-    dest: /etc/php/7.4/fpm/pool.d/nextcloud.conf
+    dest: /etc/php/8.0/fpm/pool.d/nextcloud.conf
   become: yes
   notify: restart php-fpm
 

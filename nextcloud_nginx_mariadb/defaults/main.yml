@@ -13,6 +13,7 @@ nextcloud_config:
   - "filelocking.enabled --type=boolean --value=true"
   - "default_language --value=de"
   - "default_locale --value=de_DE"
+  - "default_phone_region --value=DE"
   - "overwrite.cli.url --value=https://cloud.neanderfunk.de"
   - "logtimezone --value=Europe/Berlin"
 
