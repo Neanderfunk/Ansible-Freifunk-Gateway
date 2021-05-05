@@ -4,6 +4,12 @@
 # rotate log files this often
 {{logrotate.cycle}}
 
+{% if ansible_distribution == 'Ubuntu' and logrotate.setsu is defined and logrotate.setsu %}
+# use the syslog group by default, since this is the owning group
+# of /var/log/syslog.
+su root adm
+{% endif %}
+
 # keep X weeks worth of backlogs
 rotate {{logrotate.count}}
 
@@ -17,4 +23,3 @@ create
 include /etc/logrotate.d
 
 # system-specific logs may be also be configured here.
-
