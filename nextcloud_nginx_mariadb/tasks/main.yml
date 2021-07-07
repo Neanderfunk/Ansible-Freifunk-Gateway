@@ -493,7 +493,7 @@
 - name: Prüfe ob Zertifikate schon umgestellt sind (nextcloud)
   lineinfile:
     name: /root/.acme.sh/{{ item }}_ecc/{{ item }}.conf
-    regexp: "^Le_Webroot='/var/www/nextcloud'"
+    regexp: "^Le_Webroot='stateless'"
     state: absent
   check_mode: yes
   changed_when: false
@@ -511,7 +511,7 @@
 
 - name: Stelle um Zertifikat per acme webroot
   command:
-    cmd: /root/.acme.sh/acme.sh --issue -w /var/www/nextcloud -d {{ item }} -f -k ec-384
+    cmd: /root/.acme.sh/acme.sh --issue --stateless -d {{ item }} -f -k ec-384
   when:
     - acmecertsdict[item].stat.exists
     - not certifikate_nextcloud_modus_dict[item].found
