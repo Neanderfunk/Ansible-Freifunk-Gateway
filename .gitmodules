@@ -1,0 +1,3 @@
+[submodule "ext_wireguard"]
+	path = ext_wireguard
+	url = https://github.com/githubixx/ansible-role-wireguard.git
