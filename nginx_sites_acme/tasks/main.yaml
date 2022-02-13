@@ -1,0 +1,67 @@
+- name: Installiere acme.sh
+  shell: wget -O -  https://get.acme.sh | sh
+  args:
+    creates: /root/.acme.sh/acme.sh
+    warn: false
+  become: yes
+
+- name: Installiere acme in die .bashrc
+  lineinfile:
+    path: /root/.bashrc
+    regexp: '^\. "/root/.acme.sh/acme.sh.env"'
+    line: '. "/root/.acme.sh/acme.sh.env"'
+  become: yes
+
+# erstelle ssl ordner
+- name: Erstelle ssl Ordner für Let's Encrypt
+  file:
+    path: /etc/lessl
+    state: directory
+    owner: root
+    group: root
+  become: yes
+
+- name: Schreibe Hilfs-Skript
+  template:
+    src: acme-befehle.j2
+    dest: /root/acme-befehle_{{ item.hauptdomain }}.sh
+    owner: root
+    group: root
+    mode: 0744
+  when: item.createacmecert
+  loop: "{{ nginx_sites_domains }}"
+  become: yes
+
+- name: Kopiere reload.sh Vorlage Skript
+  copy:
+    src: reload.sh
+    dest: /etc/lessl/reload.sh
+    owner: root
+    group: root
+    mode: 0744
+  become: yes
+
+- name: Erstelle Let's Encrypt Domain Ordner in /etc/lessl
+  file:
+    path: "/etc/lessl/{{ item.hauptdomain }}"
+    state: directory
+    owner: root
+    group: root
+  when: item.createacmecert
+  loop: "{{ nginx_sites_domains }}"
+  become: yes
+
+# - name: Hole Let's Encrypt Zertifikate mit DNS-API
+#   shell:
+#     cmd: "/root/acme-befehle_{{ item.hauptdomain }}.sh"
+#     creates: /etc/lessl/{{ item.hauptdomain }}/fullchain.pem
+#   when: item.createacmecert
+#   loop: "{{ nginx_sites_domains }}"
+#   become: yes
+#
+# - name: Installiere Zertifikat
+#   command:
+#     cmd: /root/.acme.sh/acme.sh --install-cert -d {{ item.hauptdomain }} --cert-file /etc/lessl/{{ item.hauptdomain }}/cert.pem --key-file /etc/lessl/{{ item.hauptdomain }}/key.pem --fullchain-file /etc/lessl/{{ item.hauptdomain }}/fullchain.pem --ca-file /etc/lessl/{{ item.hauptdomain }}/ca.pem --reloadcmd "/etc/lessl/reload.sh" --ecc
+#   when: item.createacmecert
+#   loop: "{{ nginx_sites_domains }}"
+#   become: yes
