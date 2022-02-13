@@ -1,0 +1,5 @@
+- name: Common Tasks
+  include_tasks: common.yaml
+
+- name: Seiten Konfigurationen erstellen
+  include_tasks: site_config.yaml

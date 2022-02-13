@@ -1,0 +1,74 @@
+- name: Deaktiviere default Konfiguration.
+  file:
+    path: "/etc/nginx/sites-enabled/default"
+    state: absent
+  become: yes
+  notify: restart nginx
+
+# erstelle ssl ordner
+- name: Erstelle ssl Ordner
+  file:
+    path: /etc/nginx/ssl
+    state: directory
+    owner: root
+    group: root
+  become: yes
+
+# erstelle dh-params
+- name: Erstelle dh-params.
+  command: openssl dhparam -out /etc/nginx/ssl/dhparam-4096.pem 4096
+  args:
+    creates: /etc/nginx/ssl/dhparam-4096.pem
+  become: yes
+
+- name: Entferne /var/www/html Ordner
+  file:
+    state: absent
+    path: "/var/www/html"
+  become: yes
+
+# erstelle global ordner
+- name: Erstelle global Ordner
+  file:
+    path: /etc/nginx/global
+    state: directory
+    owner: root
+    group: root
+  become: yes
+
+- name: Erstelle globale inlcude Konfigurationen
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/nginx/global/{{ item.dest }}"
+  loop:
+    - { src: "global.j2", dest: "global.conf" }
+    - { src: "deny-hta.j2", dest: "deny-hta.conf" }
+    - { src: "hsts.j2", dest: "hsts.conf" }
+    - { src: "ssl_moderat.j2", dest: "ssl_moderat.conf" }
+    - { src: "ssl_modern.j2", dest: "ssl_modern.conf" }
+  notify: reload nginx
+  become: yes
+
+- name: Erstelle globale inlcude Konfiguration acme stateless
+  template:
+    src: "{{ item.src }}"
+    dest: "/etc/nginx/global/{{ item.dest }}"
+  loop:
+    - { src: "acme_stateless.j2", dest: "acme_stateless.conf" }
+  when: nginx_sites_acme_stateless
+  notify: reload nginx
+  become: yes
+
+- name: Prüfe ob acme reload Skript vorhanden ist
+  stat:
+    path: /etc/lessl/reload.sh
+  register: acmereload_script_stat_result
+  become: yes
+
+- name: Hinterlege nginx reload in acme reload Skript
+  ansible.builtin.lineinfile:
+    path: /etc/lessl/reload.sh
+    search_string: '/bin/systemctl force-reload nginx.service'
+    line: '/bin/systemctl force-reload nginx.service'
+  when: acmereload_script_stat_result.stat.exists == True
+  become: yes
