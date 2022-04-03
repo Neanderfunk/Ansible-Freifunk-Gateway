@@ -3,13 +3,13 @@
 
 - name: install required packages
   apt:
-    pkg: ['collectd', 'python-pip']
+    pkg: ['collectd', 'python3-pip']
     update_cache: yes
     state: present
 
 - name: install pip packages
   pip: 
-    name: ['ipaddress', 'pybrctl']
+    name: ['ipaddress', 'git+https://github.com/nbycomp/pybrctl.git']
     state: present 
 
 - name: enable collectd
