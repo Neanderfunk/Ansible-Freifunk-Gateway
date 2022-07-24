@@ -119,6 +119,6 @@ if [ "$batadvequal" == "2" ] ; then
  fi
 
 cd /etc/
-find . -type f -print0 | xargs -0 sed -i 's/batctl -m/batctl/g'
+find . -type f -print0 | xargs -0 sed -i 's/batctl -m/batctl meshif/g'
 cd  /usr/lib/check_mk_agent/local
-find . -type f -print0 | xargs -0 sed -i 's/batctl -m/batctl/g'
+find . -type f -print0 | xargs -0 sed -i 's/batctl -m/batctl meshif/g'
