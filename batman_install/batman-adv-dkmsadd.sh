@@ -1,6 +1,22 @@
 #!/bin/bash
 batversion="2022.1"
 #export  batversion="2022.1"
+
+# prerequirements  (base batman include)
+apt-get install -y build-essential
+apt-get install -y dkms
+apt-get install -y libnl-3-dev libnl-genl-3-dev
+apt-get install -y batctl bridge-utils
+
+## install batctl
+cd /tmp && rm -rf batctl-$batversion
+wget -4 https://downloads.open-mesh.org/batman/stable/sources/batctl/batctl-$batversion.tar.gz
+tar -xf batctl-$batversion.tar.gz
+cd batctl-$batversion &&  make &&  make install && cp /usr/local/sbin/batctl /usr/sbin/batctl
+cd /tmp && rm -rf batctl-$batversion
+rm batctl-$batversion.tar.gz
+
+## preparing dkms-direcctory
 cd /usr/src
 wget -4 https://downloads.open-mesh.org/batman/stable/sources/batman-adv/batman-adv-$batversion.tar.gz
 tar -xf batman-adv-$batversion.tar.gz
@@ -13,12 +29,40 @@ BUILT_MODULE_NAME[0]="batman-adv"
 BUILT_MODULE_LOCATION="net/batman-adv"
 DEST_MODULE_LOCATION="/extra"
 AUTOINSTALL=yes
+PRE_INSTALL=preinstall.sh
 MAKE="'make'"
 CLEAN="'make' clean"
 AUTOINSTALL="yes"
 
 EOL
+
+cat > x509.genkey << EOL
+[ req ]
+default_bits = 4096
+distinguished_name = req_distinguished_name
+prompt = no
+x509_extensions = myexts
+
+[ req_distinguished_name ]
+CN = Modules
+
+[ myexts ]
+basicConstraints=critical,CA:FALSE
+keyUsage=digitalSignature
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid
+
+EOL
+
+cat > preinstall.sh
+openssl req -new -nodes -utf8 -sha512 -days 36500 -batch -x509 -config x509.genkey -outform DER -out signing_key.x509 -keyout signing_key.pem
+mv signing_key.pem signing_key.x509 $(find /usr/src/*-generic/certs)
+
+EOL
+
+chmod +x preinstall.sh
 cd ..
+
 dkms add -m batman-adv -v $batversion
 dkms build -m batman-adv -v $batversion
 dkms install -m batman-adv -v $batversion --force
