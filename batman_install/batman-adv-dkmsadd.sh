@@ -3,6 +3,7 @@ batversion="2022.1"
 #export  batversion="2022.1"
 
 # prerequirements  (base batman include)
+apt-get update
 apt-get install -y build-essential
 apt-get install -y dkms
 apt-get install -y libnl-3-dev libnl-genl-3-dev
