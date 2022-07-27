@@ -7,6 +7,7 @@ apt-get update
 apt-get install -y build-essential pkg-config libnl-3-dev libnl-genl-3-dev
 apt-get install -y batctl bridge-utils
 apt-get install -y dkms
+grep -q -c ^batman-adv /etc/modules || printf "\nbatman-adv\n" >>/etc/modules
 
 ## install batctl
 cd /tmp && rm -rf batctl-$batversion
