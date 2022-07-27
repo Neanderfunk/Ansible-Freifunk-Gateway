@@ -26,16 +26,14 @@ tar -xf batman-adv-$batversion.tar.gz
 rm batman-adv-$batversion.tar.gz
 cd batman-adv-$batversion
 cat > dkms.conf << EOL
-PACKAGE_NAME='batman-adv'
 PACKAGE_VERSION="$batversion"
 BUILT_MODULE_NAME[0]="batman-adv"
-BUILT_MODULE_LOCATION="net/batman-adv"
-DEST_MODULE_LOCATION="/extra"
-AUTOINSTALL=yes
+BUILT_MODULE_LOCATION[0]="net/batman-adv/"
+DEST_MODULE_LOCATION[0]="/kernel/net/batman-adv/"
 PRE_INSTALL=preinstall.sh
-MAKE="'make'"
-CLEAN="'make' clean"
-AUTOINSTALL="yes"
+AUTOINSTALL=yes
+MAKE[0]="make KERNELPATH=${kernel_source_dir}"
+CLEAN="make KERNELPATH=${kernel_source_dir} clean"
 
 EOL
 
