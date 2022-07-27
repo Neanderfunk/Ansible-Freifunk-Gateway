@@ -2,13 +2,14 @@
 batversion="2022.1"
 #export  batversion="2022.1"
 
-# prerequirements  (base batman include)
+## prerequirements (base batman include)
 apt-get update
 apt-get install -y build-essential pkg-config libnl-3-dev libnl-genl-3-dev
-apt-get install -y batctl bridge-utils
-apt-mark hold batctl
+apt-get install -y batctl bridge-utils # klingt unlogisch holt aber ggf noch dependencies
+apt-mark hold batctl # damit nicht noch ein älteres batctl nachkommt später.
 apt-get install -y dkms
-grep -q -c ^batman-adv /etc/modules || printf "\nbatman-adv\n" >>/etc/modules
+## modul ab dem nächsten reboot automatisch laden
+grep -q -c ^batman-adv /etc/modules || printf "\nbatman-adv\n" >>/etc/modules 
 
 ## install batctl
 cd /tmp && rm -rf batctl-$batversion
@@ -57,9 +58,10 @@ authorityKeyIdentifier=keyid
 EOL
 
 cat > preinstall.sh << EOL
+#!/bin/bash
 openssl req -new -nodes -utf8 -sha512 -days 36500 -batch -x509 -config x509.genkey -outform DER -out signing_key.x509 -keyout signing_key.pem
-find /usr/src/ -path '*-generic/certs' -exec  cp signing_key.x509 {}/. \;
-find /usr/src/ -path '*-generic/certs' -exec  cp signing_key.pem {}/. \;
+find /usr/src/ -path '*-generic/certs' -exec cp signing_key.x509 {}/. \;
+find /usr/src/ -path '*-generic/certs' -exec cp signing_key.pem {}/. \;
 rm signing_key.x509
 rm signing_key.pem
 
