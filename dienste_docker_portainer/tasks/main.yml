@@ -1,0 +1,44 @@
+
+- name:
+  block:
+
+    # Erstelle docker-compose Ordner in /opt
+    - name: Erstelle docker Projekte Ordner in /opt/dockerprojekte
+      ansible.builtin.file:
+        path: /opt/dockerprojekte
+        state: directory
+
+
+    # Erstelle portainer Projekt Ordner
+    - name: Erstelle portainer Projekt Ordner
+      ansible.builtin.file:
+        path: /opt/dockerprojekte/portainer
+        state: directory
+
+
+    # Kopiere docker-compose Datei
+    - name: Kopiere docker-compose Projekt Datei
+      copy:
+        src: "{{ item.src }}"
+        dest: "/opt/dockerprojekte/portainer/{{ item.dest }}"
+      loop:
+        - { src: "docker-compose.yml", dest: "docker-compose.yml" }
+        - { src: "dockercomposeenv", dest: ".env" }
+
+
+    # docker-compose pull
+    - name: Ziehe portainer Image
+      ansible.builtin.command:
+        cmd: docker-compose pull
+        chdir: /opt/dockerprojekte/portainer/
+
+
+    # docker-compose up
+    - name: Starte portainer
+      ansible.builtin.command:
+        cmd: docker-compose up -d
+        chdir: /opt/dockerprojekte/portainer/
+
+
+  when: docker_portainer_install
+  become: yes
