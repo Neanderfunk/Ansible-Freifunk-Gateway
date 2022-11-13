@@ -121,6 +121,7 @@
       - php8.0-redis
       - php8.0-apcu
       - php8.0-imagick
+      - php8.0-ldap # Für LDAP Auth Plugin
       - libmagickcore-6.q16-6-extra # für svg support in imagic ab Nextcloud 21
   become: yes
 
