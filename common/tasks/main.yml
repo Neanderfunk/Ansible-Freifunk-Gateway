@@ -74,11 +74,23 @@
       'apt-transport-https', 'tshark', 'dwdiff', 'molly-guard', 'git', 'iperf3', 'mtr-tiny', 'dhcpdump', 'dhcping', 'irqbalance', 'build-essential', 'ethtool', 'traceroute', 'joe', 'speedtest-cli', 'jq', 'bc']
     update_cache: yes
 
-- name: linux-hwe-kernel
+- name: linux-hwe-kernel 18.04
   apt:
     name: ['linux-generic-hwe-18.04']
     update_cache: yes
   when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '18.04'
+
+- name: linux-hwe-kernel 20.04
+  apt:
+    name: ['linux-generic-hwe-20.04']
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '20.04'
+
+- name: linux-hwe-kernel 22.04
+  apt:
+    name: ['linux-generic-hwe-22.04']
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
 
 - name: uninstall unneeded packages
   apt:
@@ -86,6 +98,7 @@
     update_cache: yes
     state: absent
 
+# TODO: FFNEF Deaktivieren und umstellen auf einzelne Nutzer mit sudo Rechten
 - name: SSH-Schlüsseldatei generieren
   template:
     src: authorized_keys.j2

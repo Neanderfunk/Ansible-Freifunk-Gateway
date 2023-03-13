@@ -10,7 +10,7 @@
   register: figlet_stat
 
 - name: figlet name
-  command: /usr/bin/figlet -c -w 50 {{ freifunk.kurzname }}
+  command: /usr/bin/figlet -c -w 50 {{ freifunk.motdkurzname }}
   register: figlethost
   check_mode: no
   when: figlet_stat.stat.exists
