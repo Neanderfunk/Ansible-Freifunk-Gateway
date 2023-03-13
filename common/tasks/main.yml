@@ -127,6 +127,7 @@
     regexp: 'daily|weekly|monthly'
     replace: '{{ logrotate.cycle }}'
   with_items: "{{ logrotate_files.stdout_lines }}"
+  when: logrotate.updateconfs|default(false)|bool == true
 
 - name: "Update logrotate count in /etc/logrotate.d/"
   replace:
@@ -134,24 +135,25 @@
     regexp: 'rotate[ \t]+[0-9]+'
     replace: 'rotate {{ logrotate.count }}'
   with_items: "{{ logrotate_files.stdout_lines }}"
+  when: logrotate.updateconfs|default(false)|bool == true
 
 - name: Logrotate Rotationszyklus und Anzahl anpassen
   template:
     src: logrotate.conf.j2
     dest: /etc/logrotate.conf
-  when: logrotate is defined
+  when: logrotate.updateglobalconf|default(false)|bool == true
 
 - name: Logrotate konfigurieren für btmp
   template:
     src: logrotate-btmp.j2
     dest: /etc/logrotate.d/btmp
-  when: logrotate is defined
+  when: logrotate.updatebtmpconf|default(false)|bool == true
 
 - name: Logrotate konfigurieren für wtmp
   template:
     src: logrotate-wtmp.j2
     dest: /etc/logrotate.d/wtmp
-  when: logrotate is defined
+  when: logrotate.updatewtmpconf|default(false)|bool == true
 
 - name: Prüfe ob journald benutzt wird
   stat:
@@ -163,7 +165,7 @@
     dest: /etc/systemd/journald.conf
     regexp: "^[#]?MaxRetentionSec"
     line: "MaxRetentionSec={{ logrotate.cycle | lower | replace('daily',1) | replace('weekly',7) | replace('monthly',30) | replace('yearly',365) | int * logrotate.count | int }}day"
-  when: journald_conf.stat.exists
+  when: journald_conf.stat.exists && journald.zeitbegrenzung|default(false)|bool == true
   notify: restart journald
 
 - name: vnstat Bandbreiten limit auf 1000 Mbit erhöhen.
