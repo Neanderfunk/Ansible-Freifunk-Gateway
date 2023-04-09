@@ -3,7 +3,6 @@ Description=tunneldigger tunnelling network daemon using l2tpv3
 After=network.target auditd.service
 
 [Service]
-User=root
 Type=simple
 ExecStart=/srv/tunneldigger/bin/python /srv/tunneldigger/broker/l2tp_broker.py /srv/tunneldigger/broker/l2tp_broker.cfg
 KillMode=process

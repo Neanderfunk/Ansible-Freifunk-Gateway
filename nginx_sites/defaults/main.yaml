@@ -1,6 +1,0 @@
-
-
-
-nginx_vhost_template: "vhost.j2"
-
-nginx_sites_acme_stateless: no

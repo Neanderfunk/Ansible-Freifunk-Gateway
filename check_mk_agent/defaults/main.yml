@@ -1,4 +1,0 @@
-checkmk_checks_serverstatus: true
-checkmk_checks_supernode: false
-checkmk_checks_supernodeinfra: false
-checkmk_checks_updatestatus: true

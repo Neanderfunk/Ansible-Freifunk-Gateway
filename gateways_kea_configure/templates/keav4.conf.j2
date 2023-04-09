@@ -32,91 +32,61 @@
 {% endfor %}
     },
 
-{% if kea.global.unifiinformip is defined %}
-    "option-def": [{
-        "name" : "unifi-address",
-        "code" : 1,
-        "type" : "ipv4-address",
-        "space": "ubnt"
-    }],
+        "valid-lifetime": {{kea.global.lease_default}},
 
-    "client-classes": [{
-        "name": "ubnt",
-        "test": "(option[vendor-class-identifier].text == 'ubnt')",
-        "option-def": [{
-            "name": "vendor-encapsulated-options",
-            "type": "empty",
-            "encapsulate": "ubnt",
-            "code": 43
-        }],
         "option-data": [
             {
-                "name": "unifi-address",
-                "space": "ubnt",
-                "data": "{{kea.global.unifiinformip}}"
-            },
-            {
-                "name": "vendor-encapsulated-options"
+                "name": "interface-mtu",
+                "code": 26,
+                "space": "dhcp4",
+                "csv-format": true,
+                "data": "{{kea.global.mtu}}"
             }
-        ]
-    }],
-{% endif %}
+        ],
 
-    "valid-lifetime": {{kea.global.lease_default}},
-
-    "option-data": [
-        {
-            "name": "interface-mtu",
-            "code": 26,
-            "space": "dhcp4",
-            "csv-format": true,
-            "data": "{{kea.global.mtu}}"
-        }
-    ],
-
-    "subnet4": [
+        "subnet4": [
 {% for domaene in domaenenliste|dictsort %}
-        {
-            "subnet": "{{domaenen[domaene[0]].ffv4_network}}",
-            "interface": "bat{{domaene[0]}}",
-            "id" : {{domaene[0]}},
-            "pools": [
-                { "pool": "{{domaene[1].dhcp_start}} - {{domaene[1].dhcp_ende}}" }
-            ],
+            {
+                "subnet": "{{domaenen[domaene[0]].ffv4_network}}",
+                "interface": "bat{{domaene[0]}}",
+                "id" : {{domaene[0]}},
+                "pools": [ 
+                    { "pool": "{{domaene[1].dhcp_start}} - {{domaene[1].dhcp_ende}}" } 
+                ],
 {% if domaenen[domaene[0]].dhcp is defined and domaenen[domaene[0]].dhcp.reservations is defined %}
-            "reservations" : [
+                "reservations" : [
 {% for host in domaenen[domaene[0]].dhcp.reservations %}
-                {
-                    "hw-address" : "{{host.id}}",
-                    "ip-address" : "{{host.ip}}"
-                }{% if not loop.last %},{% endif %}
+                    {
+                        "hw-address" : "{{host.id}}",
+                        "ip-address" : "{{host.ip}}"
+                    }{% if not loop.last %},{% endif %}
 {% endfor %}
 
-            ],
+                ],
 {% endif %}
-            "option-data": [
-                {
-                    "name": "routers",
-                    "code": 3,
-                    "space": "dhcp4",
-                    "csv-format": true,
-                    "data": "{{domaenen[domaene[0]].ffv4_network | ipaddr(domaene[1].server_id) | ipaddr('address') }}{% if kea.routers.all_gateways is defined and kea.routers.all_gateways == True %}{% for gateway in groups['gateways'] %}{% if gateway != inventory_hostname and hostvars[gateway].domaenenliste is defined and domaene[0] in hostvars[gateway].domaenenliste %}, {{domaenen[domaene[0]].ffv4_network | ipaddr(hostvars[gateway].domaenenliste[domaene[0]].server_id) | ipaddr('address') }}{% endif %}{% endfor %}{% endif %}"
-                },
-                {
-                    "name": "domain-name-servers",
-                    "code": 6,
-                    "space": "dhcp4",
-                    "csv-format": true,
-                    "data": "{{domaenen[domaene[0]].ffv4_network | ipaddr(domaene[1].server_id) | ipaddr('address') }}{% if kea.dns.all_gateways is defined and kea.dns.all_gateways == True %}{% for gateway in groups['gateways'] %}{% if gateway != inventory_hostname and hostvars[gateway].domaenenliste is defined and domaene[0] in hostvars[gateway].domaenenliste %}, {{domaenen[domaene[0]].ffv4_network | ipaddr(hostvars[gateway].domaenenliste[domaene[0]].server_id) | ipaddr('address') }}{% endif %}{% endfor %}{% endif %}{% if kea.dns.additional %}{% for entry in kea.dns.additional %}, {{entry}}{% endfor %}{% endif %}"
-                },
-                {
-                    "name": "domain-name",
-                    "code": 15,
-                    "space": "dhcp4",
-                    "csv-format": true,
-                    "data": "{{kea.global.search_domain}}"
-                }
-            ]
+                "option-data": [ 
+                    {
+                        "name": "routers",
+                        "code": 3,
+                        "space": "dhcp4",
+                        "csv-format": true,
+                        "data": "{{domaenen[domaene[0]].ffv4_network | ipaddr(domaene[1].server_id) | ipaddr('address') }}{% if kea.routers.all_gateways is defined and kea.routers.all_gateways == True %}{% for gateway in groups['gateways'] %}{% if gateway != inventory_hostname and hostvars[gateway].domaenenliste is defined and domaene[0] in hostvars[gateway].domaenenliste %}, {{domaenen[domaene[0]].ffv4_network | ipaddr(hostvars[gateway].domaenenliste[domaene[0]].server_id) | ipaddr('address') }}{% endif %}{% endfor %}{% endif %}"
+                    },
+                    {
+                        "name": "domain-name-servers",
+                        "code": 6,
+                        "space": "dhcp4",
+                        "csv-format": true,
+                        "data": "{{domaenen[domaene[0]].ffv4_network | ipaddr(domaene[1].server_id) | ipaddr('address') }}{% if kea.dns.all_gateways is defined and kea.dns.all_gateways == True %}{% for gateway in groups['gateways'] %}{% if gateway != inventory_hostname and hostvars[gateway].domaenenliste is defined and domaene[0] in hostvars[gateway].domaenenliste %}, {{domaenen[domaene[0]].ffv4_network | ipaddr(hostvars[gateway].domaenenliste[domaene[0]].server_id) | ipaddr('address') }}{% endif %}{% endfor %}{% endif %}{% if kea.dns.additional %}{% for entry in kea.dns.additional %}, {{entry}}{% endfor %}{% endif %}"
+                    },
+                    {
+                        "name": "domain-name",
+                        "code": 15,
+                        "space": "dhcp4",
+                        "csv-format": true,
+                        "data": "{{kea.global.search_domain}}"
+                    }
+                ]
             }{% if not loop.last %},{% endif %}
 {% endfor %}
         ]

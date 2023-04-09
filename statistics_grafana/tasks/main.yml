@@ -40,9 +40,6 @@
     owner: grafana
     group: grafana
 
-- name: install pie-chart-panel
-  shell: grafana-cli plugins install grafana-piechart-panel
-
 - name: deploy grafana.ini
   template:
     src: grafana.ini.j2

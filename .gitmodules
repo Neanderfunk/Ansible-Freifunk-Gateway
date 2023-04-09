@@ -1,9 +1,0 @@
-[submodule "ext_wireguard"]
-	path = ext_wireguard
-	url = https://github.com/githubixx/ansible-role-wireguard.git
-[submodule "ext_netplan"]
-	path = ext_netplan
-	url = https://github.com/mrlesmithjr/ansible-netplan.git
-[submodule "ext_docker"]
-	path = ext_docker
-	url = https://github.com/geerlingguy/ansible-role-docker.git
