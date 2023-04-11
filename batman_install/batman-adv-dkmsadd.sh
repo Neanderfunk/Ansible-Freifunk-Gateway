@@ -72,3 +72,6 @@ cd ..
 dkms add -m batman-adv -v $batversion
 dkms build -m batman-adv -v $batversion
 dkms install -m batman-adv -v $batversion --force
+modprobe batman-adv
+batctl -v
+
