@@ -108,6 +108,7 @@
     regexp: 'daily|weekly|monthly'
     replace: '{{ logrotate.cycle }}'
   with_items: "{{ logrotate_files.stdout_lines }}"
+  when: item != ""
 
 - name: "Update logrotate count in /etc/logrotate.d/"
   replace:
@@ -115,6 +116,7 @@
     regexp: 'rotate[ \t]+[0-9]+'
     replace: 'rotate {{ logrotate.count }}'
   with_items: "{{ logrotate_files.stdout_lines }}"
+  when: item != ""
 
 - name: Logrotate Rotationszyklus und Anzahl anpassen
   template:
