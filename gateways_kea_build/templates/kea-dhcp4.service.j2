@@ -4,7 +4,9 @@ Documentation=man:kea-dhcp4(8)
 Wants=network-online.target{% if kea.database.type == "postgresql" %} postgresql.service{% endif %}
 
 After=network-online.target time-sync.target{% if kea.database.type == "postgresql" %} postgresql.service{% endif %}
+{% if kea.database.type == "postgresql" %}
 Requires=postgresql.service
+{% endif %}
 
 
 [Service]
