@@ -21,6 +21,11 @@
   with_items: "{{ _td_domain_instances.stdout_lines }}"
   when: domaenenliste is defined and item not in domaenenliste
 
+- name: Stop and disable disabled td instances
+  service: name="tunneldigger@{{ item }}.service" enabled=no state=stopped
+  loop: "{{ domaenenliste }}"
+  when: item.disabled |default(false) | bool
+
 - name: Clone tunneldigger master
   git:
     repo: https://github.com/wlanslovenija/tunneldigger
