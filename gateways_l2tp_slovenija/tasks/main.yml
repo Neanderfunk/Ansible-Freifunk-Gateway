@@ -24,7 +24,7 @@
 - name: Stop and disable disabled td instances
   service: name="tunneldigger@{{ item }}.service" enabled=no state=stopped
   loop: "{{ domaenenliste }}"
-  when: item.disabled |default(false) | bool
+  when: item.disable |default(false) | bool
 
 - name: Clone tunneldigger master
   git:
