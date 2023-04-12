@@ -22,9 +22,9 @@
   when: domaenenliste is defined and item not in domaenenliste
 
 - name: Stop and disable disabled td instances
-  service: name="tunneldigger@{{ item }}.service" enabled=no state=stopped
-  loop: "{{ domaenenliste }}"
-  when: item.disable |default(false) | bool
+  service: name="tunneldigger@{{ item.key }}.service" enabled=no state=stopped
+  with_items: "{{ domaenen|dict2items }}"
+  when: item.value.disable | default(false) | bool
 
 - name: Clone tunneldigger master
   git:
@@ -111,9 +111,10 @@
 
 - name: enable all tunneldigger instances
   systemd: name="tunneldigger@{{ item.key }}.service" enabled=yes
-  with_dict: "{{ domaenenliste }}"
-  when:
+  with_items: "{{ domaenen|dict2items }}"
+  when: 
     - domaenenliste is defined
+    - item.value.disable | default(false) == "false" | bool
 
 - name: Logrotate Rotationszyklus und Anzahl anpassen
   template:

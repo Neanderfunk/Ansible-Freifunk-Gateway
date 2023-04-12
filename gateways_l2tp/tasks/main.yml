@@ -48,6 +48,10 @@
   with_items: "{{_td_domain_instances.stdout_lines}}"
   when: domaenenliste is defined and (item not in domaenenliste or tunneldigger.instance_per_domain == False) and _td_per_domain_installed.stat.exists == True
 
+- name: Stop and disable disabled td instances
+  service: name="tunneldigger@{{ item.key }}.service" enabled=no state=stopped
+  with_items: "{{ domaenen|dict2items }}"
+  when: item.value.disable | default(false) | bool
 
 - name: Stop global td instance if change to per domain instances is ongoing
   service: name="tunneldigger.service" enabled=no state=stopped
@@ -179,10 +183,11 @@
 
 - name: enable all tunneldigger instances
   service: name="tunneldigger@{{item.key}}.service" enabled=yes
-  with_dict: "{{domaenenliste}}"
-  when:
+  with_items: "{{ domaenen|dict2items }}"
+  when: 
     - domaenenliste is defined
     - tunneldigger.instance_per_domain == True
+    - item.value.disable | default(false) == "false" | bool
 
 - name: Enable tunneldigger.service if mode is global
   service: name="tunneldigger.service" enabled=yes
