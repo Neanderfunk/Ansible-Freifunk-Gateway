@@ -7,43 +7,20 @@
     executable: bash
   register: installed_batman_version
   when: batman.version is defined and batman.version
-  changed_when: False
-  check_mode: no
+  changed_when: false
+  check_mode: false
 
-# batman.version != installierte Version: evtl vorhandenes DKMS-batman-adv deinstallieren
-- include: remove-src.yml
-  when: batman.version is not defined or batman.version == "kernel" or
-        (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)
+- name: Installierte Batman Version
+  ansible.builtin.debug:
+    var: installed_batman_version
+#   when: installed_batman_version.stdout != batman.version
 
-# installierte batman-Version erneut prüfen
-- name: Prüfe batman-adv-Version des Kernels
-  shell: |
-    set -o pipefail
-    modinfo -F version batman-adv | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?'
-  args:
-    executable: bash
-  register: installed_batman_version
-  when: batman.version is defined and batman.version != "kernel" and
-        (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)
-  changed_when: False
-  check_mode: no
+# - name: Installierte Batman Version
+#   ansible.builtin.debug:
+#     var: batman.version
 
-# batman-adv-Version im Kernel passt -> nur batctl installieren
-- include: install-deb.yml
-  when: batman.version is not defined or batman.version == "kernel" or
-        (installed_batman_version.stdout is defined and installed_batman_version.stdout == batman.version)
-
-# batman-adv-Version im Kernel passt nicht -> batctl-Paket deinstallieren und batman-adv und batctl aus Sourcen installieren
-- include: remove-deb.yml
+# batman-adv und batctl aus Quellen bauen
+- include_tasks: install-src.yml
   when: (batman.version is defined and batman.version != "kernel") and
         (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)
 
-# batman-adv und batctl aus Quellen bauen
-- include: install-src.yml
-  when: (batman.version is defined and (batman.version != "kernel" and batman.version != "2013.4.0")) and
-        (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)
-
-# Legacy (v14) batman-adv und batctl aus Gluon-Quellen bauen
-- include: install-legacy-src.yml
-  when: (batman.version is defined and batman.version == "2013.4.0") and
-        (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)

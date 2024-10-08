@@ -154,24 +154,6 @@ template bgp internal {
 	next hop self;
 };
 
-{% for host in groups['gateways']|default([]) %}
-{% if hostvars[host].vm_id != vm_id %}
-protocol bgp ibgp_{{host|regex_replace('-','_')}} from internal {
-{% if hostvars[host].vm_id < vm_id %}
-	neighbor {{ipv6backbone64prefixstr}}{{hostvars[host].vm_id}}:{{vm_id}}:1 as {{ff_network.as_number}};
-{% else %}
-	neighbor {{ipv6backbone64prefixstr}}{{vm_id}}:{{hostvars[host].vm_id}}:0 as {{ff_network.as_number}};
-{% endif %}
-{% if hostvars[host].hoster|default('unknown') != hoster|default('unknown') %}
-	import filter {
-		preference = 50;
-		accept;
-	};
-{% endif %}
-}
-
-{% endif %}
-{% endfor %}
 
 template bgp uplink {
 	table ffnet;
@@ -185,8 +167,8 @@ template bgp uplink {
 {% for tun in ffrl_tun %}
 protocol bgp ffrl_{{tun.name}} from uplink {
 	description "Rheinland Backbone";
-	source address {{ tun.v6_remote | next_nth_usable(1) }};
-	neighbor {{tun.v6_remote | ipaddr('address')}} as 201701;
+	source address {{ tun.v6_remote | next_nth_usable(2) }};
+	neighbor {{tun.v6_remote | next_nth_usable(1)}} as 201701;
 };
 
 {% endfor %}

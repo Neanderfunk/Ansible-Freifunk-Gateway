@@ -24,7 +24,7 @@ COMMIT
 :POSTROUTING ACCEPT [0:0]
 {% if ipv4_direkt_ausleiten is defined and ipv4_direkt_ausleiten %}
 {% if domaenenliste is defined %}
--A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j SNAT --to-source {{ ansible_default_ipv4.address }}
+-A POSTROUTING -s 10.0.0.0/8 -o {{ ansible_default_ipv4.interface }} -j SNAT --to-source {{ ansible_default_ipv4.address }}
 {% endif %}
 {% elif ffrl_tun is defined and ffrl_nat_ip is defined %}
 {% if domaenenliste is defined %}
