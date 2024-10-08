@@ -16,16 +16,16 @@
 
 - name: Install PostgreSQL
   apt:
-    name: ['postgresql-10', 'python3-psycopg2', 'sudo']
+    name: ['postgresql-12', 'python3-psycopg2', 'sudo']
     update_cache: yes
     cache_valid_time: 1800
     state: present
   when: domaenenliste is defined 
 
 
-- name: Ordnerrechte von /etc/postgresql/10/main/ auf 700 setzen
+- name: Ordnerrechte von /etc/postgresql/12/main/ auf 700 setzen
   ansible.builtin.file:
-    path: /etc/postgresql/10/main/
+    path: /etc/postgresql/12/main/
     mode: '0700'
   become: yes
   notify: restart postgres
@@ -34,7 +34,7 @@
 - name: Configure PostgreSQL
   template:
     src: "{{item}}"
-    dest: "/etc/postgresql/10/main/{{item[:-3]}}"
+    dest: "/etc/postgresql/12/main/{{item[:-3]}}"
   with_items:
     - postgresql.conf.j2
     - pg_ctl.conf.j2
