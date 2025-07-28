@@ -17,6 +17,7 @@ iface tun-ffrl-{{tun.name}} inet6 static
         netmask {{tun.v6_remote | ipaddr('prefix')}}
         post-up ip -6 rule add iif $IFACE lookup ffnet
         pre-down ip -6 rule del iif $IFACE lookup ffnet ||:
+
 {% endfor %}
 {% endif %}
 
@@ -37,5 +38,6 @@ iface tun-ffnw-{{tun.name}} inet6 static
         netmask {{tun.v6_remote | ipaddr('prefix')}}
         post-up ip -6 rule add iif $IFACE lookup ffnet
         pre-down ip -6 rule del iif $IFACE lookup ffnet ||:
+
 {% endfor %}
 {% endif %}

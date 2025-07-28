@@ -11,7 +11,7 @@
   check_mode: no
 
 # batman.version != installierte Version: evtl vorhandenes DKMS-batman-adv deinstallieren
-- include: remove-src.yml
+- include_tasks: remove-src.yml
   when: batman.version is not defined or batman.version == "kernel" or
         (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)
 
@@ -29,21 +29,21 @@
   check_mode: no
 
 # batman-adv-Version im Kernel passt -> nur batctl installieren
-- include: install-deb.yml
+- include_tasks: install-deb.yml
   when: batman.version is not defined or batman.version == "kernel" or
         (installed_batman_version.stdout is defined and installed_batman_version.stdout == batman.version)
 
 # batman-adv-Version im Kernel passt nicht -> batctl-Paket deinstallieren und batman-adv und batctl aus Sourcen installieren
-- include: remove-deb.yml
+- include_tasks: remove-deb.yml
   when: (batman.version is defined and batman.version != "kernel") and
         (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)
 
 # batman-adv und batctl aus Quellen bauen
-- include: install-src.yml
+- include_tasks: install-src.yml
   when: (batman.version is defined and (batman.version != "kernel" and batman.version != "2013.4.0")) and
         (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)
 
 # Legacy (v14) batman-adv und batctl aus Gluon-Quellen bauen
-- include: install-legacy-src.yml
+- include_tasks: install-legacy-src.yml
   when: (batman.version is defined and batman.version == "2013.4.0") and
         (installed_batman_version.stdout is defined and installed_batman_version.stdout != batman.version)

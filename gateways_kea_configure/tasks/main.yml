@@ -1,6 +1,3 @@
-# Configure ISC KEA
----
-
 - name: check whether isc-dhcp-server.service is running
   shell: "systemctl status isc-dhcp-server.service"
   register: _isc_dhcp_status
