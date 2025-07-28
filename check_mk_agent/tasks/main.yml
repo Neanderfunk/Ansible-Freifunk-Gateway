@@ -9,17 +9,18 @@
   get_url:
       url="{{ check_mk.deb }}"
       dest="/root/check_mk_agent.deb"
+      force=true
 
 - name: Install checkmk package
   apt:
     deb: "/root/check_mk_agent.deb"
 
-- name: checkmk localcheck cached directories
-  file:
-    path: /usr/lib/check_mk_agent/local/300
-    recurse: yes
-    state: directory
-    mode: '0755'
+# - name: checkmk localcheck cached directories
+#   file:
+#     path: /usr/lib/check_mk_agent/local/300
+#     recurse: yes
+#     state: directory
+#     mode: '0755'
 
 - name: checkmk localcheck cached directories
   file:
@@ -64,9 +65,10 @@
   copy: "src=supernode dest='/usr/lib/check_mk_agent/local/supernode' owner=root group=root mode='755'"
   when: checkmk_checks_supernode
 
-- name: copy checkmk localcheck supernode-infra
-  copy: "src=supernode-infra dest='/usr/lib/check_mk_agent/local/300/supernode-infra' owner=root group=root mode='755'"
-  when: checkmk_checks_supernodeinfra
+# moved to supernode switch Controller
+# - name: copy checkmk localcheck supernode-infra
+#   copy: "src=supernode-infra dest='/usr/lib/check_mk_agent/local/300/supernode-infra' owner=root group=root mode='755'"
+#   when: checkmk_checks_supernodeinfra
 
 - name: copy checkmk localcheck updatestatus
   copy: "src=updatestatus dest='/usr/lib/check_mk_agent/local/600/updatestatus' owner=root group=root mode='755'"

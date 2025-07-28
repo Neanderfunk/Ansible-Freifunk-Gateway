@@ -13,14 +13,18 @@ function conflines # get lines from file $1 mathing $2, stripped of # and ; comm
  echo "$(cat $1|grep -v '^$\|^\s*\#'|sed -e "s/[[:space:]]\+/ /g"|sed s/^\ //|sed s/\;//|grep -i $2)"
 }
 
+# do not execute backup files (~ extension)
+  [ "$(echo ${BASH_SOURCE[0]}|awk '{print substr($0,length($0))}')" == "~" ] && exit 99
+
 ## ubuntu patch status
 osversion=$(lsb_release -a 2>/dev/null|grep Description|cut -d: -f2|xargs)
 nupdates=0
 supdates=0
+if [[ $osversion = "Ubuntu 14.04"* && -x /usr/lib/update-notifier/update-motd-updates-available ]] ; then
+  nupdates=$(/usr/lib/update-notifier/update-motd-updates-available|grep -i 'packages\ can\ be\ updated\|Software-Pakete'|cut -d" " -f1)
+  supdates=$(/usr/lib/update-notifier/update-motd-updates-available|grep -i 'updates\ are\ security\ updates\|Sicherheitsaktualisierungen'|cut -d" " -f1)
+ fi
 if [[ $osversion = "Ubuntu 16.04"* && -x /var/lib/update-notifier/updates-available ]] ; then
-  nupdates=$(cat /var/lib/update-notifier/updates-available|grep -i 'packages\ can\ be\ updated\|Software-Pakete'|cut -d" " -f1)
-  supdates=$(cat /var/lib/update-notifier/updates-available|grep -i 'updates\ are\ security\ updates\|Sicherheitsaktualisierungen'|cut -d" " -f1)
- elif [[ $osversion = "Ubuntu 18.04"* && -x /var/lib/update-notifier/updates-available ]] ; then
   nupdates=$(cat /var/lib/update-notifier/updates-available|grep -i 'packages\ can\ be\ updated\|Software-Pakete'|cut -d" " -f1)
   supdates=$(cat /var/lib/update-notifier/updates-available|grep -i 'updates\ are\ security\ updates\|Sicherheitsaktualisierungen'|cut -d" " -f1)
  elif [ -x /usr/lib/update-notifier/apt-check ] ; then
@@ -40,4 +44,3 @@ if [ "$kernel" != "$latestbootkernel" ]; then
   reboot=1
  fi
 echo "P Ubuntu-Patchstatus SecurityUpdates-waiting=$supdates.0;0:1;0:5|RegularUpdates-waiting=$nupdates.0;0:30;0:50|Reboot-waiting=$reboot.0;0:1;0:2"
-

@@ -1,0 +1,50 @@
+- name: Clone sn-domaenen-controller Repo
+  ansible.builtin.git:
+    repo: https://git.ideenwerk.me/neanderfunk/sn-domaenen-controller.git
+    dest: /opt/sn_domaenen_controller
+    update: yes
+  #register: tunneldigger_master_install
+
+
+- name: Setze Hostnamen Konfiguration
+  ansible.builtin.template:
+    src: "hostname.j2"
+    dest: "/opt/sn_domaenen_controller/hostname"
+
+- name: Clone tunneldigger-checker Repo
+  ansible.builtin.git:
+    repo: https://git.ideenwerk.me/neanderfunk/tunneldigger-checker.git
+    dest: /opt/sn_domaenen_controller/tunneldiggerchecker-repo
+    update: yes
+
+- name: Abhängigkeiten installieren für tunneldigger-checker
+  ansible.builtin.apt:
+    name:
+      - libnl-3-dev
+      - libnl-genl-3-dev
+      - cmake
+    state: present
+    update_cache: yes
+
+- name: Baue das CMake-Projekt
+  ansible.builtin.command:
+    cmd: cmake .
+    chdir: /opt/sn_domaenen_controller/tunneldiggerchecker-repo/client
+
+- name: Baue tunneldigger checker binary
+  community.general.make:
+    chdir: /opt/sn_domaenen_controller/tunneldiggerchecker-repo/client
+
+- name: Kopiere binary
+  ansible.builtin.copy:
+    src: /opt/sn_domaenen_controller/tunneldiggerchecker-repo/client/tunneldigger
+    dest: /opt/sn_domaenen_controller/tunneldiggerchecker
+    remote_src: yes
+    mode: '755'
+
+- name: Kopiere cronkonfiguration nach /etc/cron.d/
+  ansible.builtin.copy:
+    src: /opt/sn_domaenen_controller/supernodecontroller
+    dest: /etc/cron.d/supernodecontroller
+    remote_src: yes
+    mode: '644'

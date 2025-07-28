@@ -1,6 +1,7 @@
 [Unit]
 Description=tunneldigger tunnelling network daemon using l2tpv3 for domain %i
-After=network.target auditd.service
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple

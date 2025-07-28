@@ -59,6 +59,13 @@
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Install python dependencies
+  command: "/srv/tunneldigger/env_tunneldigger/bin/pip install setuptools"
+  args:
+    chdir: /srv/tunneldigger
+  when: domaenenliste is defined
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Install tunneldigger_broker
   command: "/srv/tunneldigger/env_tunneldigger/bin/python setup.py install"
   args:
     chdir: /srv/tunneldigger/broker

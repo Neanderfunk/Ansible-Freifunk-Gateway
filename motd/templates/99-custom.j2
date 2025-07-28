@@ -14,12 +14,13 @@ echo " Hostname    : $(hostname)"
 echo " IP address  : $(hostname -I | cut -d' ' -f1){% if ansible_default_ipv6.address is defined %} / {{ ansible_default_ipv6.address }}{% endif %}"
 echo " System type : $(uname -s) $(uname -m)"
 echo " Kernel      : $(uname -r)"
+echo " batman      : $(batctl -v)"
 echo " "
 {% if server_besitzer is defined %}
 echo " Besitzer    : {{ server_besitzer }}"
 {% endif %}
 
-cat << 'EOF'
+cat << EOF
 
 {% if ffnw_nat_ip is defined %}
  FFNW-NAT-IP : {{ffnw_nat_ip}}
@@ -28,9 +29,12 @@ cat << 'EOF'
  FFRL-NAT-IP : {{ffrl_nat_ip}}
 {% endif %}
 
+ A = Ansible konfiguriert
+ S = Systmed Service unit enabled
+
 {% if domaenenliste is defined %}
 {% for domaene in domaenenliste|dictsort %}
- Domäne-{{domaene[0]}}   : {{domaenen[domaene[0]].ffv4_network | ipaddr(domaene[1].server_id) | ipaddr('address') }} / {{domaenen[domaene[0]].ffv6_network | ipaddr(domaene[1].server_id) | ipaddr('address') }}
+ A:{% if (domaenen[domaene[0]].disable |bool) is false%}🟢{% else %}🔴{% endif %} S:$([ "$(systemctl is-enabled tunneldigger@{{domaene[0]}}.service 2>/dev/null)" = "enabled" ] && echo "🟢" || echo "🔴") Domäne-{{domaene[0]}}   : {{domaenen[domaene[0]].ffv4_network | ipaddr(domaene[1].server_id) | ipaddr('address') }} / {{domaenen[domaene[0]].ffv6_network | ipaddr(domaene[1].server_id) | ipaddr('address') }}
 {% endfor %}
 {% elif group_names[0].startswith('domaene-') %}
  Freifunk IP:     {{ff_network.v4_network | ipaddr(vm_id) | ipaddr('address') }} / {{ff_network.v6_network | ipaddr(vm_id) | ipaddr('address') }}
@@ -39,4 +43,9 @@ cat << 'EOF'
 {% else %}
  Aufgabe: {{ group_names | last }}
 {% endif %}
+
+ Uplink Tunnel:
+$(birdc s p|grep BGP | sed 's/^/  v4: /g')
+
+$(birdc6 s p|grep BGP | sed 's/^/  v6: /g')
 EOF

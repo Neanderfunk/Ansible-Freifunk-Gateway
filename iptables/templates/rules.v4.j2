@@ -16,6 +16,17 @@
 :OUTPUT ACCEPT [0:0]
 -A INPUT -p udp -m udp --dport 111 -j DROP
 -A OUTPUT -p icmp -m icmp --icmp-type 3 -j DROP
+{% if ffrl_tun is defined %}
+{% for tun in ffrl_tun %}
+-A INPUT -s {{ tun.gre_target }}/32 -i {{ tunneldigger.interface }} -p gre -j ACCEPT
+{% endfor %}
+{% endif %}
+{% if ffnw_tun is defined %}
+{% for tun in ffnw_tun %}
+-A INPUT -s {{ tun.gre_target }}/32 -i {{ tunneldigger.interface }} -p gre -j ACCEPT
+{% endfor %}
+{% endif %}
+-A INPUT -i {{ tunneldigger.interface }} -p gre -j DROP
 COMMIT
 *nat
 :PREROUTING ACCEPT [0:0]

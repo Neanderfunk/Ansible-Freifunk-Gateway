@@ -1,72 +1,74 @@
 # install bind9 service 
 # ---
-- name: install bind9
-  apt:
+- name: Install bind9
+  ansible.builtin.apt:
     pkg: bind9
     state: present
 
-- name: create folder for named logging
-  file:
+- name: Create folder for named logging
+  ansible.builtin.file:
     path: /var/log/named/
     state: directory
     owner: bind
     group: root
 
-- name: create folder for named slave zonefiles
-  file:
+- name: Create folder for named slave zonefiles
+  ansible.builtin.file:
     path: /etc/bind/slave
     state: directory
     owner: bind
     group: root
 
-- name: deploy named.conf.log
-  template: src=named.conf.log.j2 dest=/etc/bind/named.conf.log
+- name: Deploy named.conf.log
+  ansible.builtin.template:
+    src: named.conf.log.j2
+    dest: /etc/bind/named.conf.log
   notify:
-    - restart bind9
+    - Restart bind9
 
-- name: deploy named.conf.local
-  template: src=named.conf.local.j2 dest=/etc/bind/named.conf.local
+- name: Deploy named.conf.local
+  ansible.builtin.template: src=named.conf.local.j2 dest=/etc/bind/named.conf.local
   notify:
-    - restart bind9
+    - Restart bind9
 
-- name: deploy named.conf.options
-  template: src=named.conf.options.j2 dest=/etc/bind/named.conf.options
+- name: Deploy named.conf.options
+  ansible.builtin.template: src=named.conf.options.j2 dest=/etc/bind/named.conf.options
   notify:
-    - restart bind9
+    - Restart bind9
 
-- name: create named.conf.ffnet
-  template: src=named.conf.ffnet.j2 dest=/etc/bind/named.conf.ffnet
+- name: Create named.conf.ffnet
+  ansible.builtin.template: src=named.conf.ffnet.j2 dest=/etc/bind/named.conf.ffnet
   notify:
-    - restart bind9
+    - Restart bind9
 
-- name: create named.conf.tld
-  template: src=named.conf.tld.j2 dest=/etc/bind/named.conf.tld
+- name: Create named.conf.tld
+  ansible.builtin.template: src=named.conf.tld.j2 dest=/etc/bind/named.conf.tld
   notify:
-    - restart bind9
+    - Restart bind9
   when: is_external_nameserver is defined and is_external_nameserver
 
-- name: create named.conf
-  template: src=named.conf.j2 dest=/etc/bind/named.conf
+- name: Create named.conf
+  ansible.builtin.template: src=named.conf.j2 dest=/etc/bind/named.conf
   notify:
-    - restart bind9
+    - Restart bind9
 
-- name: create own db file for each subdomaene
-  template: src=db.ffnet.j2 dest=/etc/bind/db.domaene-{{item}}.ffnet
+- name: Create own db file for each subdomaene
+  ansible.builtin.template: src=db.ffnet.j2 dest=/etc/bind/db.domaene-{{item}}.ffnet
   notify:
-    - restart bind9
+    - Restart bind9
   with_items: "{{domaenenliste | default([])}}"
   when: domaenenliste is defined
 
-- name: create folder for bind9.service file
-  file: path=/etc/systemd/system/bind9.service.d state=directory mode=0755
+- name: Create folder for bind9.service file
+  ansible.builtin.file: path=/etc/systemd/system/bind9.service.d state=directory mode=0755
 
-- name: copy bind9.service
-  copy: src=bind9.service dest=/etc/systemd/system/bind9.service.d/override.conf
+- name: Copy bind9.service
+  ansible.builtin.copy: src=bind9.service dest=/etc/systemd/system/bind9.service.d/override.conf
   notify:
-    - reread systemd configs
+    - Restart bind9
 
 - name: Deploy logrotate template file
-  template:
+  ansible.builtin.template:
     src: logrotate-bind.j2
     dest: /etc/logrotate.d/bind
   when:
