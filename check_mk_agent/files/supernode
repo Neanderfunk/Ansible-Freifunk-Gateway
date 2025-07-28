@@ -23,7 +23,7 @@ function ati # ipv4 to longint
 }
 
 # get exspected domains from kea.conf
-keaconf="/etc/kea/kea.conf"
+keaconf="/etc/kea/kea-dhcp4.conf"
 domain_ids=($(cat $keaconf|jq -r '.Dhcp4.subnet4 |map(.id)'|grep .[0-9]|tr -d ', '))
 domain_v4ranges=($(cat $keaconf|jq -r '.Dhcp4.subnet4 |map(.pools)'|grep pool|cut -d: -f 2|tr -d '" '))
 domain_cliifs=($(cat $keaconf|jq -r '.Dhcp4.subnet4 |map(.interface)'|grep '"'|tr -d '", '))
@@ -108,7 +108,7 @@ for b in "${domain_ids[@]}"; do
 echo "P TD Tunneldiggeractive=$tdsum.0;$mintdok:$maxtdok;$mintdok:$maxtdok";
 
 ## kea-dhcp4
-keaactive=$(systemctl is-active kea-dhcp4.service)
+keaactive=$(systemctl is-active kea-dhcp4-server.service)
 kearunning=$(ps ax |grep kea-dhcp4|grep -v grep|wc -l)
 keastatus=0; [ "$keaactive" == "active" ] && keastatus=1
 echo "P KEA keaactive=$keastatus.0;0:2;0:2 kearunning=$kearunning keaservice=$keaactive";

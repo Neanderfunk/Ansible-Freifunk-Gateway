@@ -38,7 +38,7 @@
       <p><a class="btn-ffms-collapse visible-xs" data-toggle="collapse" data-target="#narrow-results">&#187; Mehr Freifunk Links</a></p>
       <div id="narrow-results" class="narrow-results collapse">
 {% for host in groups['gateways']|default([]) %}
-        <p><a href="http://{{host}}.servers.{{freifunk.domain}}">Gateway: {{host}}</a></p>
+        <p><a href="http://{{host}}.{{freifunk.domain}}">Gateway: {{host}}</a></p>
 {% endfor %}
       </div>
       </br>

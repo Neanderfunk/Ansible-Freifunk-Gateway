@@ -1,2 +1,7 @@
 - name: reload-or-restart kea-dhcp4.service
   shell: systemctl reload-or-restart kea-dhcp4.service
+
+- name: Restart kea-dhcp4 service
+  ansible.builtin.systemd_service:
+    state: restarted
+    name: kea-dhcp4-server.service
