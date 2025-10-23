@@ -1,6 +1,6 @@
 #!/bin/bash
-batversion="2024.4"
-#export  batversion="2024.4"
+batversion="2025.3"
+#export  batversion="2025.3"
 
 ## prerequirements (base batman include)
 apt-get update
