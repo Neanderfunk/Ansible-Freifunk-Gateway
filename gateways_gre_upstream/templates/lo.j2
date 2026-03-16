@@ -18,4 +18,5 @@ iface lo inet loopback
         up ip rule add iif lo table ffnet suppress_prefixlength 0
         up ip -6 rule add iif lo table ffnet suppress_prefixlength 0
 {% endif %}
-        up ip -6 route add default dev lo table ffnet metric 2048
+        up ip -6 rule add from 2a03:2260::/30 unreachable priority 20000
+        up up rule add from 185.66.194.0/22 unreachable priority 32766
